@@ -11,24 +11,40 @@
             </flux:sidebar.header>
 
             <flux:sidebar.nav>
-                <flux:sidebar.group :heading="__('Platform')" class="grid">
+                <flux:sidebar.group :heading="__('Menu')" class="grid">
                     <flux:sidebar.item icon="home" :href="route('dashboard')" :current="request()->routeIs('dashboard')" wire:navigate>
                         {{ __('Dashboard') }}
                     </flux:sidebar.item>
+                    <flux:sidebar.item icon="calendar" :href="route('bookings.index')" :current="request()->routeIs('bookings.*')" wire:navigate>
+                        {{ __('Bookings') }}
+                    </flux:sidebar.item>
+                    <flux:sidebar.item icon="banknotes" :href="route('payments.index')" :current="request()->routeIs('payments.*')" wire:navigate>
+                        {{ __('Payments') }}
+                    </flux:sidebar.item>
                 </flux:sidebar.group>
+
+                @if(auth()->user()->isAdmin())
+                    <flux:sidebar.group :heading="__('Management')" class="grid">
+                        <flux:sidebar.item icon="tag" :href="route('room-categories.index')" :current="request()->routeIs('room-categories.*')" wire:navigate>
+                            {{ __('Room Categories') }}
+                        </flux:sidebar.item>
+                        <flux:sidebar.item icon="building-office" :href="route('rooms-manage.index')" :current="request()->routeIs('rooms-manage.*')" wire:navigate>
+                            {{ __('Rooms') }}
+                        </flux:sidebar.item>
+                        <flux:sidebar.item icon="chat-bubble-left-ellipsis" :href="route('complaints.index')" :current="request()->routeIs('complaints.*')" wire:navigate>
+                            {{ __('Complaints') }}
+                        </flux:sidebar.item>
+                        <flux:sidebar.item icon="chart-bar" :href="route('reports.index')" :current="request()->routeIs('reports.*')" wire:navigate>
+                            {{ __('Reports') }}
+                        </flux:sidebar.item>
+                        <flux:sidebar.item icon="users" :href="route('staff.index')" :current="request()->routeIs('staff.*')" wire:navigate>
+                            {{ __('Staff') }}
+                        </flux:sidebar.item>
+                    </flux:sidebar.group>
+                @endif
             </flux:sidebar.nav>
 
             <flux:spacer />
-
-            <flux:sidebar.nav>
-                <flux:sidebar.item icon="folder-git-2" href="https://github.com/laravel/livewire-starter-kit" target="_blank">
-                    {{ __('Repository') }}
-                </flux:sidebar.item>
-
-                <flux:sidebar.item icon="book-open-text" href="https://laravel.com/docs/starter-kits#livewire" target="_blank">
-                    {{ __('Documentation') }}
-                </flux:sidebar.item>
-            </flux:sidebar.nav>
 
             <x-desktop-user-menu class="hidden lg:block" :name="auth()->user()->name" />
         </flux:sidebar>
