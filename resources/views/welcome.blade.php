@@ -5,13 +5,15 @@
     </head>
     <body class="min-h-screen bg-slate-50 antialiased dark:bg-zinc-900">
         {{-- Navigation --}}
-        <header class="fixed inset-x-0 top-0 z-50 border-b border-slate-200/80 bg-white/80 backdrop-blur dark:border-zinc-700 dark:bg-zinc-900/80">
-            <div class="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
+        <header x-data="{ mobileOpen: false }" class="fixed inset-x-0 top-0 z-50 border-b border-slate-200/80 bg-white/80 backdrop-blur dark:border-zinc-700 dark:bg-zinc-900/80">
+            <div class="mx-auto flex max-w-7xl items-center justify-between px-4 py-4 sm:px-6">
                 <a href="{{ route('home') }}" class="flex items-center gap-2">
                     <x-app-logo-icon class="size-7 text-zinc-900 dark:text-white" />
                     <span class="text-lg font-semibold text-zinc-900 dark:text-white">HOBMS</span>
                 </a>
-                <nav class="flex items-center gap-4 text-sm">
+
+                {{-- Desktop Nav --}}
+                <nav class="hidden items-center gap-4 text-sm sm:flex">
                     <a href="#rooms" class="text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white">Rooms</a>
                     <a href="#track-booking" class="text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white">Track Booking</a>
                     @auth
@@ -20,7 +22,6 @@
                         <a href="{{ route('login') }}" class="text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white">Staff Login</a>
                     @endauth
                     <button
-                        x-data
                         @click="
                             let isDark = document.documentElement.classList.contains('dark');
                             if (isDark) {
@@ -37,6 +38,59 @@
                         <flux:icon.sun class="size-4 hidden dark:block" />
                         <flux:icon.moon class="size-4 dark:hidden" />
                     </button>
+                </nav>
+
+                {{-- Mobile: theme toggle + hamburger --}}
+                <div class="flex items-center gap-1 sm:hidden">
+                    <button
+                        @click="
+                            let isDark = document.documentElement.classList.contains('dark');
+                            if (isDark) {
+                                document.documentElement.classList.remove('dark');
+                                localStorage.setItem('flux.appearance', 'light');
+                            } else {
+                                document.documentElement.classList.add('dark');
+                                localStorage.setItem('flux.appearance', 'dark');
+                            }
+                        "
+                        class="flex size-9 items-center justify-center rounded-md text-zinc-500 hover:bg-zinc-100 dark:text-zinc-400 dark:hover:bg-zinc-800"
+                        title="Toggle theme"
+                    >
+                        <flux:icon.sun class="size-4 hidden dark:block" />
+                        <flux:icon.moon class="size-4 dark:hidden" />
+                    </button>
+                    <button
+                        @click="mobileOpen = !mobileOpen"
+                        class="flex size-9 items-center justify-center rounded-md text-zinc-600 hover:bg-zinc-100 dark:text-zinc-400 dark:hover:bg-zinc-800"
+                        :aria-expanded="mobileOpen"
+                        aria-label="Toggle menu"
+                    >
+                        <svg x-show="!mobileOpen" class="size-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" /></svg>
+                        <svg x-show="mobileOpen" class="size-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" /></svg>
+                    </button>
+                </div>
+            </div>
+
+            {{-- Mobile Menu Dropdown --}}
+            <div
+                x-show="mobileOpen"
+                x-transition:enter="transition ease-out duration-150"
+                x-transition:enter-start="opacity-0 -translate-y-2"
+                x-transition:enter-end="opacity-100 translate-y-0"
+                x-transition:leave="transition ease-in duration-100"
+                x-transition:leave-start="opacity-100 translate-y-0"
+                x-transition:leave-end="opacity-0 -translate-y-2"
+                class="border-t border-slate-200/80 bg-white/95 backdrop-blur sm:hidden dark:border-zinc-700 dark:bg-zinc-900/95"
+            >
+                <nav class="flex flex-col gap-1 px-4 py-3">
+                    <a href="#rooms" @click="mobileOpen = false" class="rounded-lg px-3 py-2.5 text-sm font-medium text-zinc-700 hover:bg-slate-100 dark:text-zinc-300 dark:hover:bg-zinc-800">Rooms</a>
+                    <a href="#track-booking" @click="mobileOpen = false" class="rounded-lg px-3 py-2.5 text-sm font-medium text-zinc-700 hover:bg-slate-100 dark:text-zinc-300 dark:hover:bg-zinc-800">Track Booking</a>
+                    <div class="my-1 border-t border-slate-100 dark:border-zinc-800"></div>
+                    @auth
+                        <a href="{{ route('dashboard') }}" @click="mobileOpen = false" class="rounded-lg px-3 py-2.5 text-sm font-medium text-zinc-700 hover:bg-slate-100 dark:text-zinc-300 dark:hover:bg-zinc-800" wire:navigate>Dashboard</a>
+                    @else
+                        <a href="{{ route('login') }}" @click="mobileOpen = false" class="rounded-lg px-3 py-2.5 text-sm font-medium text-zinc-700 hover:bg-slate-100 dark:text-zinc-300 dark:hover:bg-zinc-800">Staff Login</a>
+                    @endauth
                 </nav>
             </div>
         </header>
@@ -73,48 +127,49 @@
                 <div class="absolute -bottom-20 -left-40 size-[500px] rounded-full bg-gradient-to-tr from-zinc-800/50 to-zinc-700/30 blur-3xl"></div>
             </div>
 
-            <div class="relative mx-auto max-w-7xl px-6 py-24 text-center">
+            <div class="relative mx-auto max-w-7xl px-4 py-20 text-center sm:px-6 sm:py-24">
                 {{-- Badge --}}
                 <div class="mb-6 inline-flex items-center gap-2 rounded-full border border-blue-200 bg-blue-50/80 px-4 py-1.5 text-xs font-medium text-blue-700 backdrop-blur dark:border-blue-800/50 dark:bg-blue-900/20 dark:text-blue-400">
                     <span class="size-1.5 rounded-full bg-blue-500"></span>
-                    Hotel Online Booking Management System
+                    <span class="hidden sm:inline">Hotel Online Booking Management System</span>
+                    <span class="sm:hidden">HOBMS</span>
                 </div>
-                <h1 class="text-5xl font-bold tracking-tight text-zinc-900 sm:text-6xl lg:text-7xl dark:text-white">
+                <h1 class="text-4xl font-bold tracking-tight text-zinc-900 sm:text-5xl lg:text-7xl dark:text-white">
                     Welcome to <span class="bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent dark:from-blue-400 dark:to-indigo-400">HOBMS</span>
                 </h1>
-                <p class="mx-auto mt-6 max-w-2xl text-lg text-zinc-600 dark:text-zinc-400">
+                <p class="mx-auto mt-5 max-w-2xl text-base text-zinc-600 sm:mt-6 sm:text-lg dark:text-zinc-400">
                     Experience comfort, luxury, and exceptional service. Book your perfect room today with our seamless online reservation system.
                 </p>
-                <div class="mt-10 flex items-center justify-center gap-4">
-                    <a href="#rooms" class="rounded-lg bg-blue-600 px-8 py-3 text-sm font-semibold text-white shadow-sm hover:bg-blue-500 transition-colors">
+                <div class="mt-8 flex flex-col items-center justify-center gap-3 sm:mt-10 sm:flex-row sm:gap-4">
+                    <a href="#rooms" class="w-full rounded-lg bg-blue-600 px-8 py-3 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-blue-500 sm:w-auto">
                         Browse Rooms
                     </a>
-                    <a href="#track-booking" class="rounded-lg border border-zinc-300 bg-white/80 px-8 py-3 text-sm font-semibold text-zinc-700 shadow-sm hover:bg-white transition-colors dark:border-zinc-600 dark:bg-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-700">
+                    <a href="#track-booking" class="w-full rounded-lg border border-zinc-300 bg-white/80 px-8 py-3 text-sm font-semibold text-zinc-700 shadow-sm transition-colors hover:bg-white sm:w-auto dark:border-zinc-600 dark:bg-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-700">
                         Track Booking
                     </a>
                 </div>
 
                 {{-- Stats --}}
-                <div class="mx-auto mt-16 grid max-w-3xl grid-cols-3 gap-8">
-                    <div class="rounded-2xl border border-slate-200/80 bg-white/60 p-6 shadow-sm backdrop-blur dark:border-zinc-700/50 dark:bg-zinc-800/50">
-                        <div class="text-3xl font-bold text-zinc-900 dark:text-white">{{ \App\Models\RoomCategory::active()->count() }}</div>
-                        <div class="mt-1 text-sm text-zinc-500 dark:text-zinc-400">Room Types</div>
+                <div class="mx-auto mt-10 grid max-w-3xl grid-cols-3 gap-3 sm:mt-16 sm:gap-8">
+                    <div class="rounded-2xl border border-slate-200/80 bg-white/60 p-4 shadow-sm backdrop-blur sm:p-6 dark:border-zinc-700/50 dark:bg-zinc-800/50">
+                        <div class="text-2xl font-bold text-zinc-900 sm:text-3xl dark:text-white">{{ \App\Models\RoomCategory::active()->count() }}</div>
+                        <div class="mt-1 text-xs text-zinc-500 sm:text-sm dark:text-zinc-400">Room Types</div>
                     </div>
-                    <div class="rounded-2xl border border-slate-200/80 bg-white/60 p-6 shadow-sm backdrop-blur dark:border-zinc-700/50 dark:bg-zinc-800/50">
-                        <div class="text-3xl font-bold text-zinc-900 dark:text-white">{{ \App\Models\Room::available()->count() }}</div>
-                        <div class="mt-1 text-sm text-zinc-500 dark:text-zinc-400">Rooms Available</div>
+                    <div class="rounded-2xl border border-slate-200/80 bg-white/60 p-4 shadow-sm backdrop-blur sm:p-6 dark:border-zinc-700/50 dark:bg-zinc-800/50">
+                        <div class="text-2xl font-bold text-zinc-900 sm:text-3xl dark:text-white">{{ \App\Models\Room::available()->count() }}</div>
+                        <div class="mt-1 text-xs text-zinc-500 sm:text-sm dark:text-zinc-400">Rooms Available</div>
                     </div>
-                    <div class="rounded-2xl border border-slate-200/80 bg-white/60 p-6 shadow-sm backdrop-blur dark:border-zinc-700/50 dark:bg-zinc-800/50">
-                        <div class="text-3xl font-bold text-zinc-900 dark:text-white">24/7</div>
-                        <div class="mt-1 text-sm text-zinc-500 dark:text-zinc-400">Front Desk</div>
+                    <div class="rounded-2xl border border-slate-200/80 bg-white/60 p-4 shadow-sm backdrop-blur sm:p-6 dark:border-zinc-700/50 dark:bg-zinc-800/50">
+                        <div class="text-2xl font-bold text-zinc-900 sm:text-3xl dark:text-white">24/7</div>
+                        <div class="mt-1 text-xs text-zinc-500 sm:text-sm dark:text-zinc-400">Front Desk</div>
                     </div>
                 </div>
             </div>
         </section>
 
         {{-- Room Categories Section --}}
-        <section id="rooms" class="border-t border-slate-200 bg-white py-24 dark:border-zinc-700 dark:bg-zinc-800">
-            <div class="mx-auto max-w-7xl px-6">
+        <section id="rooms" class="border-t border-slate-200 bg-white py-16 sm:py-24 dark:border-zinc-700 dark:bg-zinc-800">
+            <div class="mx-auto max-w-7xl px-4 sm:px-6">
                 <div class="text-center">
                     <div class="mb-3 inline-block rounded-full bg-blue-50 px-3 py-1 text-xs font-semibold uppercase tracking-widest text-blue-600 dark:bg-blue-900/30 dark:text-blue-400">Accommodations</div>
                     <h2 class="text-3xl font-bold tracking-tight text-zinc-900 dark:text-white">Our Rooms</h2>
@@ -155,13 +210,13 @@
         </section>
 
         {{-- Booking Lookup Section --}}
-        <section id="track-booking" class="relative overflow-hidden border-t border-slate-200 bg-slate-50 py-24 dark:border-zinc-700 dark:bg-zinc-900">
+        <section id="track-booking" class="relative overflow-hidden border-t border-slate-200 bg-slate-50 py-16 sm:py-24 dark:border-zinc-700 dark:bg-zinc-900">
             {{-- Abstract bg --}}
             <div class="absolute inset-0 dark:opacity-0">
                 <div class="absolute right-0 top-0 size-96 rounded-full bg-blue-100/60 blur-3xl"></div>
                 <div class="absolute left-0 bottom-0 size-72 rounded-full bg-indigo-100/50 blur-3xl"></div>
             </div>
-            <div class="relative mx-auto max-w-md px-6">
+            <div class="relative mx-auto max-w-md px-4 sm:px-6">
                 <div class="mb-8 text-center">
                     <div class="mx-auto mb-4 flex size-14 items-center justify-center rounded-full bg-blue-100 dark:bg-blue-900/30">
                         <svg class="size-7 text-blue-600 dark:text-blue-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z"/></svg>
