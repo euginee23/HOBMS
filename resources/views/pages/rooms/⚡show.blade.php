@@ -5,7 +5,7 @@ use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
 use Livewire\Component;
 
-new #[Layout('layouts.public')] class extends Component {
+new #[Layout('layouts.public')] #[Title('Room Details')] class extends Component {
     public RoomCategory $category;
 
     public function mount(string $slug): void
@@ -20,12 +20,6 @@ new #[Layout('layouts.public')] class extends Component {
         $availableRooms = $this->category->rooms()->available()->orderBy('room_number')->get();
 
         return compact('availableRooms');
-    }
-
-    #[Title]
-    public function title(): string
-    {
-        return $this->category->name;
     }
 }; ?>
 

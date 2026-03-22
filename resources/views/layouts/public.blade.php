@@ -12,8 +12,8 @@
                     <span class="text-lg font-semibold text-zinc-900 dark:text-white">HOBMS</span>
                 </a>
                 <nav class="flex items-center gap-4 text-sm">
-                    <a href="{{ route('rooms.index') }}" class="text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white" wire:navigate>Rooms</a>
-                    <a href="{{ route('portal.lookup') }}" class="text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white" wire:navigate>Track Booking</a>
+                    <a href="{{ route('home') }}#rooms" class="text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white">Rooms</a>
+                    <a href="{{ route('home') }}#track-booking" class="text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white">Track Booking</a>
                     @auth
                         <a href="{{ route('dashboard') }}" class="rounded-md bg-zinc-900 px-4 py-2 text-white hover:bg-zinc-700 dark:bg-white dark:text-zinc-900 dark:hover:bg-zinc-200" wire:navigate>Dashboard</a>
                     @else
