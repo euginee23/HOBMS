@@ -2,7 +2,9 @@
 
 namespace Database\Factories;
 
+use App\Enums\BedType;
 use App\Enums\RoomStatus;
+use App\Enums\ViewType;
 use App\Models\Room;
 use App\Models\RoomCategory;
 use Illuminate\Database\Eloquent\Factories\Factory;
@@ -23,6 +25,10 @@ class RoomFactory extends Factory
             'room_category_id' => RoomCategory::factory(),
             'room_number' => fake()->unique()->numerify('###'),
             'floor' => (string) fake()->numberBetween(1, 5),
+            'bed_type' => fake()->randomElement(BedType::cases()),
+            'bed_count' => fake()->numberBetween(1, 3),
+            'view_type' => fake()->randomElement(ViewType::cases()),
+            'is_smoking' => fake()->boolean(20),
             'status' => RoomStatus::Available,
         ];
     }

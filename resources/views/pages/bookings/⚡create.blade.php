@@ -43,13 +43,15 @@ new #[Title('Walk-in Booking')] class extends Component {
         }
 
         $nights = \Carbon\Carbon::parse($validated['check_in_date'])->diffInDays(\Carbon\Carbon::parse($validated['check_out_date']));
+        $extraGuests = max(0, $validated['num_guests'] - $room->roomCategory->base_occupancy);
+        $extraCharge = $extraGuests * $room->roomCategory->extra_person_charge * $nights;
 
         $booking = Booking::create([
             ...$validated,
             'booking_status' => BookingStatus::Confirmed,
             'payment_status' => PaymentStatus::Unpaid,
             'price_per_night' => $room->roomCategory->price_per_night,
-            'total_amount' => $room->roomCategory->price_per_night * $nights,
+            'total_amount' => ($room->roomCategory->price_per_night * $nights) + $extraCharge,
             'confirmed_by' => Auth::id(),
             'confirmed_at' => now(),
         ]);

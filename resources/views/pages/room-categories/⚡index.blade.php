@@ -57,7 +57,8 @@ new #[Title('Room Categories')] class extends Component {
                     <tr>
                         <th class="px-6 py-3 font-medium text-zinc-500 dark:text-zinc-400">Name</th>
                         <th class="px-6 py-3 font-medium text-zinc-500 dark:text-zinc-400">Price/Night</th>
-                        <th class="px-6 py-3 font-medium text-zinc-500 dark:text-zinc-400">Max Capacity</th>
+                        <th class="px-6 py-3 font-medium text-zinc-500 dark:text-zinc-400">Size</th>
+                        <th class="px-6 py-3 font-medium text-zinc-500 dark:text-zinc-400">Occupancy</th>
                         <th class="px-6 py-3 font-medium text-zinc-500 dark:text-zinc-400">Rooms</th>
                         <th class="px-6 py-3 font-medium text-zinc-500 dark:text-zinc-400">Status</th>
                         <th class="px-6 py-3 font-medium text-zinc-500 dark:text-zinc-400">Actions</th>
@@ -79,7 +80,8 @@ new #[Title('Room Categories')] class extends Component {
                                 </div>
                             </td>
                             <td class="px-6 py-4 text-zinc-600 dark:text-zinc-400">₱{{ number_format($category->price_per_night, 2) }}</td>
-                            <td class="px-6 py-4 text-zinc-600 dark:text-zinc-400">{{ $category->max_capacity }}</td>
+                            <td class="px-6 py-4 text-zinc-600 dark:text-zinc-400">{{ $category->room_size_sqm ? $category->room_size_sqm . ' sqm' : '—' }}</td>
+                            <td class="px-6 py-4 text-zinc-600 dark:text-zinc-400">{{ $category->base_occupancy }}–{{ $category->max_capacity }}</td>
                             <td class="px-6 py-4 text-zinc-600 dark:text-zinc-400">{{ $category->rooms_count }}</td>
                             <td class="px-6 py-4">
                                 <flux:badge size="sm" :color="$category->is_active ? 'lime' : 'zinc'">
@@ -95,7 +97,7 @@ new #[Title('Room Categories')] class extends Component {
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="6" class="px-6 py-8 text-center text-zinc-500 dark:text-zinc-400">No room categories found.</td>
+                            <td colspan="7" class="px-6 py-8 text-center text-zinc-500 dark:text-zinc-400">No room categories found.</td>
                         </tr>
                     @endforelse
                 </tbody>

@@ -19,6 +19,9 @@ class RoomCategory extends Model
         'description',
         'price_per_night',
         'max_capacity',
+        'room_size_sqm',
+        'base_occupancy',
+        'extra_person_charge',
         'amenities',
         'image_path',
         'is_active',
@@ -32,6 +35,9 @@ class RoomCategory extends Model
         return [
             'price_per_night' => 'decimal:2',
             'max_capacity' => 'integer',
+            'room_size_sqm' => 'integer',
+            'base_occupancy' => 'integer',
+            'extra_person_charge' => 'decimal:2',
             'amenities' => 'array',
             'is_active' => 'boolean',
         ];
@@ -54,6 +60,14 @@ class RoomCategory extends Model
     public function rooms(): HasMany
     {
         return $this->hasMany(Room::class);
+    }
+
+    /**
+     * Get gallery images for this category.
+     */
+    public function images(): HasMany
+    {
+        return $this->hasMany(RoomCategoryImage::class)->orderBy('sort_order');
     }
 
     /**

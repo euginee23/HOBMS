@@ -12,6 +12,7 @@ new #[Layout('layouts.public')] #[Title('Room Details')] class extends Component
     {
         $this->category = RoomCategory::where('slug', $slug)
             ->where('is_active', true)
+            ->with('images')
             ->firstOrFail();
     }
 
@@ -47,25 +48,48 @@ new #[Layout('layouts.public')] #[Title('Room Details')] class extends Component
                 @endif
             </div>
 
+            {{-- Gallery Images --}}
+            @if($category->images->isNotEmpty())
+                <div class="mt-4 grid grid-cols-3 gap-3 sm:grid-cols-5">
+                    @foreach($category->images as $image)
+                        <div class="h-20 overflow-hidden rounded-lg">
+                            <img src="{{ Storage::url($image->image_path) }}" alt="{{ $category->name }} gallery" class="h-full w-full object-cover" />
+                        </div>
+                    @endforeach
+                </div>
+            @endif
+
             {{-- Details --}}
             <div class="mt-8">
                 <h1 class="text-3xl font-bold text-zinc-900 dark:text-white">{{ $category->name }}</h1>
                 <p class="mt-4 text-zinc-600 dark:text-zinc-400">{{ $category->description }}</p>
 
-                <div class="mt-6 grid grid-cols-2 gap-4 sm:grid-cols-3">
+                <div class="mt-6 grid grid-cols-2 gap-4 sm:grid-cols-4">
                     <div class="rounded-lg border border-zinc-200 p-4 dark:border-zinc-700">
                         <div class="text-sm text-zinc-500 dark:text-zinc-400">Price per Night</div>
                         <div class="mt-1 text-2xl font-bold text-blue-600 dark:text-blue-400">₱{{ number_format($category->price_per_night) }}</div>
                     </div>
+                    @if($category->room_size_sqm)
+                        <div class="rounded-lg border border-zinc-200 p-4 dark:border-zinc-700">
+                            <div class="text-sm text-zinc-500 dark:text-zinc-400">Room Size</div>
+                            <div class="mt-1 text-2xl font-bold text-zinc-900 dark:text-white">{{ $category->room_size_sqm }} <span class="text-sm font-normal">sqm</span></div>
+                        </div>
+                    @endif
                     <div class="rounded-lg border border-zinc-200 p-4 dark:border-zinc-700">
-                        <div class="text-sm text-zinc-500 dark:text-zinc-400">Max Guests</div>
-                        <div class="mt-1 text-2xl font-bold text-zinc-900 dark:text-white">{{ $category->max_capacity }}</div>
+                        <div class="text-sm text-zinc-500 dark:text-zinc-400">Guests</div>
+                        <div class="mt-1 text-2xl font-bold text-zinc-900 dark:text-white">{{ $category->base_occupancy }}–{{ $category->max_capacity }}</div>
                     </div>
                     <div class="rounded-lg border border-zinc-200 p-4 dark:border-zinc-700">
                         <div class="text-sm text-zinc-500 dark:text-zinc-400">Available Rooms</div>
                         <div class="mt-1 text-2xl font-bold text-green-600 dark:text-green-400">{{ $availableRooms->count() }}</div>
                     </div>
                 </div>
+
+                @if($category->extra_person_charge > 0)
+                    <p class="mt-3 text-sm text-zinc-500 dark:text-zinc-400">
+                        Base rate covers {{ $category->base_occupancy }} {{ Str::plural('guest', $category->base_occupancy) }}. Extra guest: <strong class="text-zinc-700 dark:text-zinc-300">₱{{ number_format($category->extra_person_charge) }}/night</strong> each (up to {{ $category->max_capacity }}).
+                    </p>
+                @endif
 
                 @if($category->amenities && count($category->amenities))
                     <div class="mt-6">

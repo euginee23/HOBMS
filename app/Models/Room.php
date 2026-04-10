@@ -2,8 +2,10 @@
 
 namespace App\Models;
 
+use App\Enums\BedType;
 use App\Enums\BookingStatus;
 use App\Enums\RoomStatus;
+use App\Enums\ViewType;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -18,8 +20,13 @@ class Room extends Model
         'room_category_id',
         'room_number',
         'floor',
+        'bed_type',
+        'bed_count',
+        'view_type',
+        'is_smoking',
         'status',
         'notes',
+        'last_cleaned_at',
     ];
 
     /**
@@ -29,6 +36,11 @@ class Room extends Model
     {
         return [
             'status' => RoomStatus::class,
+            'bed_type' => BedType::class,
+            'view_type' => ViewType::class,
+            'is_smoking' => 'boolean',
+            'bed_count' => 'integer',
+            'last_cleaned_at' => 'datetime',
         ];
     }
 

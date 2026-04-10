@@ -38,13 +38,16 @@ new #[Title('Book a Room')] #[Layout('layouts.public')] class extends Component 
     {
         $nights = 0;
         $total = 0;
+        $extraCharge = 0;
 
         if ($this->check_in_date && $this->check_out_date && $this->check_out_date > $this->check_in_date) {
             $nights = \Carbon\Carbon::parse($this->check_in_date)->diffInDays(\Carbon\Carbon::parse($this->check_out_date));
-            $total = $nights * $this->category->price_per_night;
+            $extraGuests = max(0, $this->num_guests - $this->category->base_occupancy);
+            $extraCharge = $extraGuests * $this->category->extra_person_charge * $nights;
+            $total = ($nights * $this->category->price_per_night) + $extraCharge;
         }
 
-        return compact('nights', 'total');
+        return compact('nights', 'total', 'extraCharge');
     }
 
     public function book(): void
@@ -104,6 +107,8 @@ new #[Title('Book a Room')] #[Layout('layouts.public')] class extends Component 
         }
 
         $nights = \Carbon\Carbon::parse($this->check_in_date)->diffInDays(\Carbon\Carbon::parse($this->check_out_date));
+        $extraGuests = max(0, $this->num_guests - $this->category->base_occupancy);
+        $extraCharge = $extraGuests * $this->category->extra_person_charge * $nights;
 
         $booking = \App\Models\Booking::create([
             'guest_name' => $this->guest_name,
@@ -117,7 +122,7 @@ new #[Title('Book a Room')] #[Layout('layouts.public')] class extends Component 
             'booking_status' => BookingStatus::Pending,
             'payment_status' => PaymentStatus::Unpaid,
             'price_per_night' => $this->category->price_per_night,
-            'total_amount' => $nights * $this->category->price_per_night,
+            'total_amount' => ($nights * $this->category->price_per_night) + $extraCharge,
             'amount_paid' => 0,
         ]);
 
@@ -175,7 +180,7 @@ new #[Title('Book a Room')] #[Layout('layouts.public')] class extends Component 
             @if($step === 1)
                 {{-- Step 1: Booking Form --}}
                 <h1 class="text-3xl font-bold text-zinc-900 dark:text-white">Book {{ $category->name }}</h1>
-                <p class="mt-2 text-zinc-600 dark:text-zinc-400">₱{{ number_format($category->price_per_night) }} per night &middot; Up to {{ $category->max_capacity }} guests</p>
+                <p class="mt-2 text-zinc-600 dark:text-zinc-400">₱{{ number_format($category->price_per_night) }} per night &middot; {{ $category->base_occupancy }}–{{ $category->max_capacity }} guests@if($category->room_size_sqm) &middot; {{ $category->room_size_sqm }} sqm@endif</p>
 
                 <form wire:submit="book" class="mt-8 space-y-6">
                     {{-- Guest Information --}}
@@ -216,6 +221,12 @@ new #[Title('Book a Room')] #[Layout('layouts.public')] class extends Component 
                                     <dt class="text-zinc-600 dark:text-zinc-400">Rate</dt>
                                     <dd class="font-medium text-zinc-900 dark:text-white">₱{{ number_format($category->price_per_night) }} /night</dd>
                                 </div>
+                                @if($extraCharge > 0)
+                                    <div class="flex justify-between">
+                                        <dt class="text-zinc-600 dark:text-zinc-400">Extra Guest Charge</dt>
+                                        <dd class="font-medium text-zinc-900 dark:text-white">₱{{ number_format($extraCharge) }}</dd>
+                                    </div>
+                                @endif
                                 <div class="flex justify-between border-t border-blue-200 pt-2 dark:border-blue-700">
                                     <dt class="font-semibold text-zinc-900 dark:text-white">Total</dt>
                                     <dd class="text-xl font-bold text-blue-600 dark:text-blue-400">₱{{ number_format($total) }}</dd>

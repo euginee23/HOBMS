@@ -4,6 +4,7 @@ use Illuminate\Support\Facades\Route;
 
 // Public pages
 Route::view('/', 'welcome')->name('home');
+Route::livewire('forgot-password', 'pages::auth.forgot-password')->name('password.request')->middleware('guest');
 Route::livewire('rooms', 'pages::rooms.index')->name('rooms.index');
 Route::livewire('rooms/{slug}', 'pages::rooms.show')->name('rooms.show');
 Route::livewire('book/{slug}', 'pages::booking.create')->name('booking.create');

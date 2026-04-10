@@ -1,6 +1,8 @@
 <?php
 
+use App\Enums\BedType;
 use App\Enums\RoomStatus;
+use App\Enums\ViewType;
 use App\Models\Room;
 use App\Models\RoomCategory;
 use Livewire\Attributes\Computed;
@@ -13,6 +15,10 @@ new #[Title('Edit Room')] class extends Component {
     public string $room_number = '';
     public string $room_category_id = '';
     public int $floor = 1;
+    public string $bed_type = '';
+    public int $bed_count = 1;
+    public string $view_type = 'none';
+    public bool $is_smoking = false;
     public string $status = 'available';
     public string $notes = '';
 
@@ -22,6 +28,10 @@ new #[Title('Edit Room')] class extends Component {
         $this->room_number = $room->room_number;
         $this->room_category_id = (string) $room->room_category_id;
         $this->floor = $room->floor;
+        $this->bed_type = $room->bed_type?->value ?? '';
+        $this->bed_count = $room->bed_count;
+        $this->view_type = $room->view_type->value;
+        $this->is_smoking = $room->is_smoking;
         $this->status = $room->status->value;
         $this->notes = $room->notes ?? '';
     }
@@ -32,6 +42,10 @@ new #[Title('Edit Room')] class extends Component {
             'room_number' => ['required', 'string', 'max:20', 'unique:rooms,room_number,' . $this->room->id],
             'room_category_id' => ['required', 'exists:room_categories,id'],
             'floor' => ['required', 'integer', 'min:1'],
+            'bed_type' => ['nullable', 'in:' . implode(',', array_column(BedType::cases(), 'value'))],
+            'bed_count' => ['required', 'integer', 'min:1', 'max:10'],
+            'view_type' => ['required', 'in:' . implode(',', array_column(ViewType::cases(), 'value'))],
+            'is_smoking' => ['boolean'],
             'status' => ['required', 'in:' . implode(',', array_column(RoomStatus::cases(), 'value'))],
             'notes' => ['nullable', 'string', 'max:500'],
         ]);
@@ -66,11 +80,34 @@ new #[Title('Edit Room')] class extends Component {
                 @endforeach
             </flux:select>
 
-            <flux:select wire:model="status" label="Status">
-                @foreach(RoomStatus::cases() as $status)
-                    <flux:select.option value="{{ $status->value }}">{{ $status->label() }}</flux:select.option>
-                @endforeach
-            </flux:select>
+            <div class="grid gap-4 sm:grid-cols-3">
+                <flux:select wire:model="bed_type" label="Bed Type">
+                    <flux:select.option value="">Select Bed Type</flux:select.option>
+                    @foreach(BedType::cases() as $type)
+                        <flux:select.option value="{{ $type->value }}">{{ $type->label() }}</flux:select.option>
+                    @endforeach
+                </flux:select>
+
+                <flux:input wire:model="bed_count" label="Number of Beds" type="number" min="1" max="10" required />
+
+                <flux:select wire:model="view_type" label="View Type" required>
+                    @foreach(ViewType::cases() as $view)
+                        <flux:select.option value="{{ $view->value }}">{{ $view->label() }}</flux:select.option>
+                    @endforeach
+                </flux:select>
+            </div>
+
+            <div class="grid gap-4 sm:grid-cols-2">
+                <flux:select wire:model="status" label="Status">
+                    @foreach(RoomStatus::cases() as $status)
+                        <flux:select.option value="{{ $status->value }}">{{ $status->label() }}</flux:select.option>
+                    @endforeach
+                </flux:select>
+
+                <div class="flex items-end pb-1">
+                    <flux:switch wire:model="is_smoking" label="Smoking Allowed" />
+                </div>
+            </div>
 
             <flux:textarea wire:model="notes" label="Notes" rows="2" />
 

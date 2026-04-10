@@ -2,7 +2,9 @@
 
 namespace Database\Seeders;
 
+use App\Enums\BedType;
 use App\Enums\RoomStatus;
+use App\Enums\ViewType;
 use App\Models\Room;
 use App\Models\RoomCategory;
 use Illuminate\Database\Seeder;
@@ -14,26 +16,63 @@ class RoomSeeder extends Seeder
      */
     public function run(): void
     {
-        $categories = RoomCategory::all();
+        $categories = RoomCategory::all()->keyBy('name');
 
         $roomMap = [
-            'Standard' => ['101', '102', '103', '104', '105', '106', '107', '108'],
-            'Deluxe' => ['201', '202', '203', '204', '205', '206'],
-            'Superior' => ['301', '302', '303', '304', '305'],
-            'Suite' => ['401', '402', '403'],
-            'Family' => ['501', '502', '503', '504'],
+            'Standard' => [
+                ['room_number' => '101', 'bed_type' => BedType::Double, 'bed_count' => 1, 'view_type' => ViewType::None],
+                ['room_number' => '102', 'bed_type' => BedType::Twin, 'bed_count' => 2, 'view_type' => ViewType::None],
+                ['room_number' => '103', 'bed_type' => BedType::Double, 'bed_count' => 1, 'view_type' => ViewType::Garden],
+                ['room_number' => '104', 'bed_type' => BedType::Twin, 'bed_count' => 2, 'view_type' => ViewType::None],
+                ['room_number' => '105', 'bed_type' => BedType::Double, 'bed_count' => 1, 'view_type' => ViewType::City],
+                ['room_number' => '106', 'bed_type' => BedType::Double, 'bed_count' => 1, 'view_type' => ViewType::Garden],
+                ['room_number' => '107', 'bed_type' => BedType::Single, 'bed_count' => 2, 'view_type' => ViewType::None],
+                ['room_number' => '108', 'bed_type' => BedType::Double, 'bed_count' => 1, 'view_type' => ViewType::City],
+            ],
+            'Deluxe' => [
+                ['room_number' => '201', 'bed_type' => BedType::Queen, 'bed_count' => 1, 'view_type' => ViewType::City],
+                ['room_number' => '202', 'bed_type' => BedType::Queen, 'bed_count' => 1, 'view_type' => ViewType::Garden],
+                ['room_number' => '203', 'bed_type' => BedType::Queen, 'bed_count' => 1, 'view_type' => ViewType::Pool],
+                ['room_number' => '204', 'bed_type' => BedType::Twin, 'bed_count' => 2, 'view_type' => ViewType::City],
+                ['room_number' => '205', 'bed_type' => BedType::Queen, 'bed_count' => 1, 'view_type' => ViewType::Pool],
+                ['room_number' => '206', 'bed_type' => BedType::Queen, 'bed_count' => 1, 'view_type' => ViewType::Garden],
+            ],
+            'Superior' => [
+                ['room_number' => '301', 'bed_type' => BedType::King, 'bed_count' => 1, 'view_type' => ViewType::Ocean],
+                ['room_number' => '302', 'bed_type' => BedType::King, 'bed_count' => 1, 'view_type' => ViewType::Ocean],
+                ['room_number' => '303', 'bed_type' => BedType::King, 'bed_count' => 1, 'view_type' => ViewType::Mountain],
+                ['room_number' => '304', 'bed_type' => BedType::Queen, 'bed_count' => 1, 'view_type' => ViewType::Pool],
+                ['room_number' => '305', 'bed_type' => BedType::King, 'bed_count' => 1, 'view_type' => ViewType::Ocean],
+            ],
+            'Suite' => [
+                ['room_number' => '401', 'bed_type' => BedType::King, 'bed_count' => 1, 'view_type' => ViewType::Ocean],
+                ['room_number' => '402', 'bed_type' => BedType::King, 'bed_count' => 1, 'view_type' => ViewType::Ocean],
+                ['room_number' => '403', 'bed_type' => BedType::King, 'bed_count' => 1, 'view_type' => ViewType::Mountain],
+            ],
+            'Family' => [
+                ['room_number' => '501', 'bed_type' => BedType::Queen, 'bed_count' => 2, 'view_type' => ViewType::Garden],
+                ['room_number' => '502', 'bed_type' => BedType::Queen, 'bed_count' => 2, 'view_type' => ViewType::Pool],
+                ['room_number' => '503', 'bed_type' => BedType::Double, 'bed_count' => 3, 'view_type' => ViewType::Garden],
+                ['room_number' => '504', 'bed_type' => BedType::Queen, 'bed_count' => 2, 'view_type' => ViewType::City],
+            ],
         ];
 
-        foreach ($categories as $category) {
-            $rooms = $roomMap[$category->name] ?? [];
+        foreach ($roomMap as $categoryName => $rooms) {
+            $category = $categories->get($categoryName);
 
-            foreach ($rooms as $roomNumber) {
-                $floor = substr($roomNumber, 0, 1);
+            if (! $category) {
+                continue;
+            }
 
+            foreach ($rooms as $roomData) {
                 Room::create([
                     'room_category_id' => $category->id,
-                    'room_number' => $roomNumber,
-                    'floor' => $floor,
+                    'room_number' => $roomData['room_number'],
+                    'floor' => substr($roomData['room_number'], 0, 1),
+                    'bed_type' => $roomData['bed_type'],
+                    'bed_count' => $roomData['bed_count'],
+                    'view_type' => $roomData['view_type'],
+                    'is_smoking' => false,
                     'status' => RoomStatus::Available,
                 ]);
             }

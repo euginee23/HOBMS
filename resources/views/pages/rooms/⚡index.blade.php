@@ -53,13 +53,20 @@ new #[Title('Our Rooms')] #[Layout('layouts.public')] class extends Component {
                                 </div>
                             @endif
 
+                            <div class="mt-3 flex items-center gap-3 text-xs text-zinc-500 dark:text-zinc-400">
+                                @if($category->room_size_sqm)
+                                    <span>{{ $category->room_size_sqm }} sqm</span>
+                                    <span>&middot;</span>
+                                @endif
+                                <span>{{ $category->base_occupancy }}–{{ $category->max_capacity }} guests</span>
+                            </div>
+
                             <div class="mt-4 flex items-center justify-between">
                                 <div>
                                     <span class="text-2xl font-bold text-blue-600 dark:text-blue-400">₱{{ number_format($category->price_per_night) }}</span>
                                     <span class="text-sm text-zinc-500 dark:text-zinc-400">/night</span>
                                 </div>
                                 <div class="text-right text-sm text-zinc-500 dark:text-zinc-400">
-                                    <div>Up to {{ $category->max_capacity }} guests</div>
                                     <div>{{ $category->rooms_count }} available</div>
                                 </div>
                             </div>

@@ -86,6 +86,8 @@ new #[Title('Rooms Management')] class extends Component {
                         <th class="px-6 py-3 font-medium text-zinc-500 dark:text-zinc-400">Room #</th>
                         <th class="px-6 py-3 font-medium text-zinc-500 dark:text-zinc-400">Category</th>
                         <th class="px-6 py-3 font-medium text-zinc-500 dark:text-zinc-400">Floor</th>
+                        <th class="px-6 py-3 font-medium text-zinc-500 dark:text-zinc-400">Bed</th>
+                        <th class="px-6 py-3 font-medium text-zinc-500 dark:text-zinc-400">View</th>
                         <th class="px-6 py-3 font-medium text-zinc-500 dark:text-zinc-400">Status</th>
                         <th class="px-6 py-3 font-medium text-zinc-500 dark:text-zinc-400">Actions</th>
                     </tr>
@@ -96,6 +98,8 @@ new #[Title('Rooms Management')] class extends Component {
                             <td class="px-6 py-4 font-medium text-zinc-900 dark:text-white">{{ $room->room_number }}</td>
                             <td class="px-6 py-4 text-zinc-600 dark:text-zinc-400">{{ $room->roomCategory->name }}</td>
                             <td class="px-6 py-4 text-zinc-600 dark:text-zinc-400">{{ $room->floor }}</td>
+                            <td class="px-6 py-4 text-zinc-600 dark:text-zinc-400">{{ $room->bed_type?->label() ?? '—' }} {{ $room->bed_count > 1 ? '×' . $room->bed_count : '' }}</td>
+                            <td class="px-6 py-4 text-zinc-600 dark:text-zinc-400">{{ $room->view_type->label() }}</td>
                             <td class="px-6 py-4">
                                 <flux:badge size="sm" :color="$room->status->color()">{{ $room->status->label() }}</flux:badge>
                             </td>
@@ -108,7 +112,7 @@ new #[Title('Rooms Management')] class extends Component {
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="5" class="px-6 py-8 text-center text-zinc-500 dark:text-zinc-400">No rooms found.</td>
+                            <td colspan="7" class="px-6 py-8 text-center text-zinc-500 dark:text-zinc-400">No rooms found.</td>
                         </tr>
                     @endforelse
                 </tbody>
