@@ -2,8 +2,11 @@
 
 use App\Enums\BookingStatus;
 use App\Enums\PaymentStatus;
+use App\Mail\BookingCancelled;
+use App\Mail\BookingConfirmed;
 use App\Models\Booking;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Mail;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Title;
 use Livewire\Component;
@@ -25,7 +28,11 @@ new #[Title('Booking Details')] class extends Component {
         ]);
 
         $this->booking->refresh();
-        session()->flash('success', 'Booking confirmed.');
+        $this->booking->load('room.roomCategory');
+
+        Mail::to($this->booking->guest_email)->send(new BookingConfirmed($this->booking));
+
+        session()->flash('success', 'Booking confirmed. Confirmation email sent to guest.');
     }
 
     public function checkIn(): void
@@ -62,7 +69,11 @@ new #[Title('Booking Details')] class extends Component {
         ]);
 
         $this->booking->refresh();
-        session()->flash('success', 'Booking cancelled.');
+        $this->booking->load('room.roomCategory');
+
+        Mail::to($this->booking->guest_email)->send(new BookingCancelled($this->booking));
+
+        session()->flash('success', 'Booking cancelled. Cancellation email sent to guest.');
     }
 
     public function markNoShow(): void
