@@ -4,6 +4,8 @@ namespace Database\Seeders;
 
 use App\Models\RoomCategory;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Storage;
 
 class RoomCategorySeeder extends Seeder
 {
@@ -12,6 +14,8 @@ class RoomCategorySeeder extends Seeder
      */
     public function run(): void
     {
+        Storage::disk('public')->makeDirectory('room-categories');
+
         $categories = [
             [
                 'name' => 'Standard',
@@ -71,7 +75,28 @@ class RoomCategorySeeder extends Seeder
         ];
 
         foreach ($categories as $category) {
+            $this->downloadPlaceholderImage($category['image_path']);
             RoomCategory::create($category);
+        }
+    }
+
+    /**
+     * Download a placeholder image from picsum.photos and store it.
+     */
+    private function downloadPlaceholderImage(string $path): void
+    {
+        if (Storage::disk('public')->exists($path)) {
+            return;
+        }
+
+        try {
+            $response = Http::timeout(15)->get('https://picsum.photos/800/600');
+
+            if ($response->successful()) {
+                Storage::disk('public')->put($path, $response->body());
+            }
+        } catch (\Throwable) {
+            // Seeding should not fail if image download fails
         }
     }
 }
