@@ -4,6 +4,11 @@
         @include('partials.head')
     </head>
     <body class="min-h-screen bg-white dark:bg-zinc-800">
+        @php
+            $pendingBookings = \App\Models\Booking::where('booking_status', \App\Enums\BookingStatus::Pending)->count();
+            $unresolvedComplaints = \App\Models\Complaint::whereIn('complaint_status', [\App\Enums\ComplaintStatus::Open, \App\Enums\ComplaintStatus::InProgress])->count();
+            $todayCheckIns = \App\Models\Booking::where('check_in_date', today())->whereIn('booking_status', [\App\Enums\BookingStatus::Confirmed, \App\Enums\BookingStatus::CheckedIn])->count();
+        @endphp
         <flux:sidebar sticky collapsible="mobile" class="border-e border-zinc-200 bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-900">
             <flux:sidebar.header>
                 <x-app-logo :sidebar="true" href="{{ route('dashboard') }}" wire:navigate />
@@ -11,11 +16,11 @@
             </flux:sidebar.header>
 
             <flux:sidebar.nav>
-                <flux:sidebar.group :heading="__('Menu')" class="grid">
-                    <flux:sidebar.item icon="home" :href="route('dashboard')" :current="request()->routeIs('dashboard')" wire:navigate>
+                <flux:sidebar.group :heading="__('Platform')" class="grid">
+                    <flux:sidebar.item icon="home" :href="route('dashboard')" :current="request()->routeIs('dashboard')" wire:navigate :badge="$todayCheckIns ?: null" badge:color="blue">
                         {{ __('Dashboard') }}
                     </flux:sidebar.item>
-                    <flux:sidebar.item icon="calendar" :href="route('bookings.index')" :current="request()->routeIs('bookings.*')" wire:navigate>
+                    <flux:sidebar.item icon="calendar" :href="route('bookings.index')" :current="request()->routeIs('bookings.*')" wire:navigate :badge="$pendingBookings ?: null" badge:color="amber">
                         {{ __('Bookings') }}
                     </flux:sidebar.item>
                     <flux:sidebar.item icon="banknotes" :href="route('payments.index')" :current="request()->routeIs('payments.*')" wire:navigate>
@@ -31,7 +36,7 @@
                         <flux:sidebar.item icon="building-office" :href="route('rooms-manage.index')" :current="request()->routeIs('rooms-manage.*')" wire:navigate>
                             {{ __('Rooms') }}
                         </flux:sidebar.item>
-                        <flux:sidebar.item icon="chat-bubble-left-ellipsis" :href="route('complaints.index')" :current="request()->routeIs('complaints.*')" wire:navigate>
+                        <flux:sidebar.item icon="chat-bubble-left-ellipsis" :href="route('complaints.index')" :current="request()->routeIs('complaints.*')" wire:navigate :badge="$unresolvedComplaints ?: null" badge:color="red">
                             {{ __('Complaints') }}
                         </flux:sidebar.item>
                         <flux:sidebar.item icon="chart-bar" :href="route('reports.index')" :current="request()->routeIs('reports.*')" wire:navigate>

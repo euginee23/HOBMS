@@ -65,8 +65,19 @@ new #[Title('Room Categories')] class extends Component {
                 </thead>
                 <tbody class="divide-y divide-zinc-200 dark:divide-zinc-700">
                     @forelse($this->categories as $category)
-                        <tr class="hover:bg-zinc-50 dark:hover:bg-zinc-800/50">
-                            <td class="px-6 py-4 font-medium text-zinc-900 dark:text-white">{{ $category->name }}</td>
+                        <tr wire:key="cat-{{ $category->id }}" class="hover:bg-zinc-50 dark:hover:bg-zinc-800/50">
+                            <td class="px-6 py-4">
+                                <div class="flex items-center gap-3">
+                                    @if($category->image_path)
+                                        <img src="{{ Storage::url($category->image_path) }}" alt="{{ $category->name }}" class="size-10 rounded-lg object-cover" />
+                                    @else
+                                        <div class="flex size-10 items-center justify-center rounded-lg bg-blue-50 dark:bg-blue-900/20">
+                                            <flux:icon.building-office class="size-5 text-blue-400" />
+                                        </div>
+                                    @endif
+                                    <span class="font-medium text-zinc-900 dark:text-white">{{ $category->name }}</span>
+                                </div>
+                            </td>
                             <td class="px-6 py-4 text-zinc-600 dark:text-zinc-400">₱{{ number_format($category->price_per_night, 2) }}</td>
                             <td class="px-6 py-4 text-zinc-600 dark:text-zinc-400">{{ $category->max_capacity }}</td>
                             <td class="px-6 py-4 text-zinc-600 dark:text-zinc-400">{{ $category->rooms_count }}</td>

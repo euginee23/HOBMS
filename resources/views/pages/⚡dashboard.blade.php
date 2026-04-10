@@ -3,6 +3,7 @@
 use App\Enums\BookingStatus;
 use App\Enums\RoomStatus;
 use App\Models\Booking;
+use App\Models\Complaint;
 use App\Models\Payment;
 use App\Models\Room;
 use Livewire\Attributes\Computed;
@@ -58,6 +59,28 @@ new #[Title('Dashboard')] class extends Component {
     }
 
     #[Computed]
+    public function unresolvedComplaints(): int
+    {
+        return Complaint::query()
+            ->whereIn('complaint_status', [\App\Enums\ComplaintStatus::Open, \App\Enums\ComplaintStatus::InProgress])
+            ->count();
+    }
+
+    #[Computed]
+    public function occupancyRate(): float
+    {
+        $total = $this->totalRooms;
+
+        if ($total === 0) {
+            return 0;
+        }
+
+        $occupied = Room::query()->where('status', RoomStatus::Occupied)->count();
+
+        return round(($occupied / $total) * 100, 1);
+    }
+
+    #[Computed]
     public function recentBookings()
     {
         return Booking::query()
@@ -79,62 +102,123 @@ new #[Title('Dashboard')] class extends Component {
 
 <div>
     <div class="space-y-6">
-        <flux:heading size="xl">{{ __('Dashboard') }}</flux:heading>
+        <div class="flex items-center justify-between">
+            <div>
+                <flux:heading size="xl">{{ __('Dashboard') }}</flux:heading>
+                <flux:text class="mt-1">Welcome back, {{ auth()->user()->name }}</flux:text>
+            </div>
+            <div class="flex gap-2">
+                <flux:button variant="primary" :href="route('bookings.create')" wire:navigate icon="plus">New Booking</flux:button>
+            </div>
+        </div>
 
         {{-- Stat Cards --}}
-        <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            <div class="rounded-xl border border-zinc-200 bg-white p-6 dark:border-zinc-700 dark:bg-zinc-900">
+        <div class="grid gap-4 grid-cols-2 lg:grid-cols-4">
+            <div class="rounded-2xl border border-zinc-200 bg-white p-5 shadow-sm transition-all hover:shadow-lg dark:border-zinc-700 dark:bg-zinc-900">
                 <div class="flex items-center gap-3">
-                    <div class="flex size-10 items-center justify-center rounded-lg bg-blue-50 dark:bg-blue-900/20">
+                    <div class="flex size-10 items-center justify-center rounded-lg bg-blue-100 dark:bg-blue-900/30">
                         <flux:icon.arrow-down-on-square class="size-5 text-blue-600 dark:text-blue-400" />
                     </div>
-                    <div>
-                        <p class="text-sm text-zinc-500 dark:text-zinc-400">Today's Check-ins</p>
+                    <div class="min-w-0">
+                        <p class="truncate text-xs font-medium text-zinc-500 dark:text-zinc-400">Today's Check-ins</p>
                         <p class="text-2xl font-bold text-zinc-900 dark:text-white">{{ $this->todayCheckIns }}</p>
                     </div>
                 </div>
             </div>
 
-            <div class="rounded-xl border border-zinc-200 bg-white p-6 dark:border-zinc-700 dark:bg-zinc-900">
+            <div class="rounded-2xl border border-zinc-200 bg-white p-5 shadow-sm transition-all hover:shadow-lg dark:border-zinc-700 dark:bg-zinc-900">
                 <div class="flex items-center gap-3">
-                    <div class="flex size-10 items-center justify-center rounded-lg bg-amber-50 dark:bg-amber-900/20">
+                    <div class="flex size-10 items-center justify-center rounded-lg bg-amber-100 dark:bg-amber-900/30">
                         <flux:icon.arrow-up-on-square class="size-5 text-amber-600 dark:text-amber-400" />
                     </div>
-                    <div>
-                        <p class="text-sm text-zinc-500 dark:text-zinc-400">Today's Check-outs</p>
+                    <div class="min-w-0">
+                        <p class="truncate text-xs font-medium text-zinc-500 dark:text-zinc-400">Today's Check-outs</p>
                         <p class="text-2xl font-bold text-zinc-900 dark:text-white">{{ $this->todayCheckOuts }}</p>
                     </div>
                 </div>
             </div>
 
-            <div class="rounded-xl border border-zinc-200 bg-white p-6 dark:border-zinc-700 dark:bg-zinc-900">
+            <div class="rounded-2xl border border-zinc-200 bg-white p-5 shadow-sm transition-all hover:shadow-lg dark:border-zinc-700 dark:bg-zinc-900">
                 <div class="flex items-center gap-3">
-                    <div class="flex size-10 items-center justify-center rounded-lg bg-green-50 dark:bg-green-900/20">
-                        <flux:icon.building-office class="size-5 text-green-600 dark:text-green-400" />
+                    <div class="flex size-10 items-center justify-center rounded-lg bg-emerald-100 dark:bg-emerald-900/30">
+                        <flux:icon.building-office class="size-5 text-emerald-600 dark:text-emerald-400" />
                     </div>
-                    <div>
-                        <p class="text-sm text-zinc-500 dark:text-zinc-400">Rooms Available</p>
-                        <p class="text-2xl font-bold text-zinc-900 dark:text-white">{{ $this->availableRooms }} / {{ $this->totalRooms }}</p>
+                    <div class="min-w-0">
+                        <p class="truncate text-xs font-medium text-zinc-500 dark:text-zinc-400">Rooms Available</p>
+                        <p class="text-2xl font-bold text-zinc-900 dark:text-white">{{ $this->availableRooms }} <span class="text-sm font-normal text-zinc-400">/ {{ $this->totalRooms }}</span></p>
                     </div>
                 </div>
             </div>
 
-            <div class="rounded-xl border border-zinc-200 bg-white p-6 dark:border-zinc-700 dark:bg-zinc-900">
-                <div class="flex items-center gap-3">
-                    <div class="flex size-10 items-center justify-center rounded-lg bg-purple-50 dark:bg-purple-900/20">
-                        <flux:icon.banknotes class="size-5 text-purple-600 dark:text-purple-400" />
+            @if(auth()->user()->isAdmin())
+                <div class="rounded-2xl border border-zinc-200 bg-white p-5 shadow-sm transition-all hover:shadow-lg dark:border-zinc-700 dark:bg-zinc-900">
+                    <div class="flex items-center gap-3">
+                        <div class="flex size-10 items-center justify-center rounded-lg bg-purple-100 dark:bg-purple-900/30">
+                            <flux:icon.banknotes class="size-5 text-purple-600 dark:text-purple-400" />
+                        </div>
+                        <div class="min-w-0">
+                            <p class="truncate text-xs font-medium text-zinc-500 dark:text-zinc-400">Monthly Earnings</p>
+                            <p class="text-2xl font-bold text-zinc-900 dark:text-white">₱{{ number_format($this->monthlyEarnings, 2) }}</p>
+                        </div>
                     </div>
-                    <div>
-                        <p class="text-sm text-zinc-500 dark:text-zinc-400">Monthly Earnings</p>
-                        <p class="text-2xl font-bold text-zinc-900 dark:text-white">₱{{ number_format($this->monthlyEarnings, 2) }}</p>
+                </div>
+            @else
+                <div class="rounded-2xl border border-zinc-200 bg-white p-5 shadow-sm transition-all hover:shadow-lg dark:border-zinc-700 dark:bg-zinc-900">
+                    <div class="flex items-center gap-3">
+                        <div class="flex size-10 items-center justify-center rounded-lg bg-red-100 dark:bg-red-900/30">
+                            <flux:icon.clock class="size-5 text-red-600 dark:text-red-400" />
+                        </div>
+                        <div class="min-w-0">
+                            <p class="truncate text-xs font-medium text-zinc-500 dark:text-zinc-400">Pending Bookings</p>
+                            <p class="text-2xl font-bold text-zinc-900 dark:text-white">{{ $this->pendingBookings }}</p>
+                        </div>
+                    </div>
+                </div>
+            @endif
+        </div>
+
+        {{-- Admin-only secondary stats --}}
+        @if(auth()->user()->isAdmin())
+            <div class="grid gap-4 grid-cols-2 lg:grid-cols-3">
+                <div class="rounded-2xl border border-zinc-200 bg-white p-5 shadow-sm dark:border-zinc-700 dark:bg-zinc-900">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-xs font-medium text-zinc-500 dark:text-zinc-400">Occupancy Rate</p>
+                            <p class="mt-1 text-2xl font-bold text-zinc-900 dark:text-white">{{ $this->occupancyRate }}%</p>
+                        </div>
+                        <div class="flex size-10 items-center justify-center rounded-lg bg-indigo-100 dark:bg-indigo-900/30">
+                            <flux:icon.chart-bar class="size-5 text-indigo-600 dark:text-indigo-400" />
+                        </div>
+                    </div>
+                </div>
+                <div class="rounded-2xl border border-zinc-200 bg-white p-5 shadow-sm dark:border-zinc-700 dark:bg-zinc-900">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-xs font-medium text-zinc-500 dark:text-zinc-400">Pending Bookings</p>
+                            <p class="mt-1 text-2xl font-bold text-amber-600 dark:text-amber-400">{{ $this->pendingBookings }}</p>
+                        </div>
+                        <div class="flex size-10 items-center justify-center rounded-lg bg-amber-100 dark:bg-amber-900/30">
+                            <flux:icon.clock class="size-5 text-amber-600 dark:text-amber-400" />
+                        </div>
+                    </div>
+                </div>
+                <div class="rounded-2xl border border-zinc-200 bg-white p-5 shadow-sm dark:border-zinc-700 dark:bg-zinc-900">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-xs font-medium text-zinc-500 dark:text-zinc-400">Unresolved Complaints</p>
+                            <p class="mt-1 text-2xl font-bold text-red-600 dark:text-red-400">{{ $this->unresolvedComplaints }}</p>
+                        </div>
+                        <div class="flex size-10 items-center justify-center rounded-lg bg-red-100 dark:bg-red-900/30">
+                            <flux:icon.exclamation-triangle class="size-5 text-red-600 dark:text-red-400" />
+                        </div>
                     </div>
                 </div>
             </div>
-        </div>
+        @endif
 
         <div class="grid gap-6 lg:grid-cols-3">
             {{-- Recent Bookings --}}
-            <div class="rounded-xl border border-zinc-200 bg-white dark:border-zinc-700 dark:bg-zinc-900 lg:col-span-2">
+            <div class="rounded-2xl border border-zinc-200 bg-white dark:border-zinc-700 dark:bg-zinc-900 lg:col-span-2">
                 <div class="flex items-center justify-between border-b border-zinc-200 px-6 py-4 dark:border-zinc-700">
                     <flux:heading size="lg">Recent Bookings</flux:heading>
                     <flux:button variant="ghost" size="sm" :href="route('bookings.index')" wire:navigate>View All</flux:button>
@@ -145,27 +229,27 @@ new #[Title('Dashboard')] class extends Component {
                             <tr>
                                 <th class="px-6 py-3 font-medium text-zinc-500 dark:text-zinc-400">Reference</th>
                                 <th class="px-6 py-3 font-medium text-zinc-500 dark:text-zinc-400">Guest</th>
-                                <th class="px-6 py-3 font-medium text-zinc-500 dark:text-zinc-400">Room</th>
+                                <th class="hidden px-6 py-3 font-medium text-zinc-500 dark:text-zinc-400 md:table-cell">Room</th>
                                 <th class="px-6 py-3 font-medium text-zinc-500 dark:text-zinc-400">Status</th>
-                                <th class="px-6 py-3 font-medium text-zinc-500 dark:text-zinc-400">Check-in</th>
+                                <th class="hidden px-6 py-3 font-medium text-zinc-500 dark:text-zinc-400 sm:table-cell">Check-in</th>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-zinc-200 dark:divide-zinc-700">
                             @forelse($this->recentBookings as $booking)
-                                <tr class="hover:bg-zinc-50 dark:hover:bg-zinc-800/50">
+                                <tr wire:key="booking-{{ $booking->id }}" class="hover:bg-zinc-50 dark:hover:bg-zinc-800/50">
                                     <td class="px-6 py-3">
                                         <a href="{{ route('bookings.show', $booking) }}" class="font-medium text-blue-600 hover:underline dark:text-blue-400" wire:navigate>
                                             {{ $booking->booking_reference }}
                                         </a>
                                     </td>
                                     <td class="px-6 py-3 text-zinc-900 dark:text-zinc-100">{{ $booking->guest_name }}</td>
-                                    <td class="px-6 py-3 text-zinc-500 dark:text-zinc-400">
+                                    <td class="hidden px-6 py-3 text-zinc-500 dark:text-zinc-400 md:table-cell">
                                         {{ $booking->room?->room_number }} - {{ $booking->room?->roomCategory?->name }}
                                     </td>
                                     <td class="px-6 py-3">
                                         <flux:badge size="sm" :color="$booking->booking_status->color()">{{ $booking->booking_status->label() }}</flux:badge>
                                     </td>
-                                    <td class="px-6 py-3 text-zinc-500 dark:text-zinc-400">{{ $booking->check_in_date->format('M d, Y') }}</td>
+                                    <td class="hidden px-6 py-3 text-zinc-500 dark:text-zinc-400 sm:table-cell">{{ $booking->check_in_date->format('M d, Y') }}</td>
                                 </tr>
                             @empty
                                 <tr>
@@ -178,7 +262,7 @@ new #[Title('Dashboard')] class extends Component {
             </div>
 
             {{-- Room Status Overview --}}
-            <div class="rounded-xl border border-zinc-200 bg-white dark:border-zinc-700 dark:bg-zinc-900">
+            <div class="rounded-2xl border border-zinc-200 bg-white dark:border-zinc-700 dark:bg-zinc-900">
                 <div class="border-b border-zinc-200 px-6 py-4 dark:border-zinc-700">
                     <flux:heading size="lg">Room Status</flux:heading>
                 </div>
@@ -199,6 +283,12 @@ new #[Title('Dashboard')] class extends Component {
                             <span class="text-lg font-semibold text-amber-600 dark:text-amber-400">{{ $this->pendingBookings }}</span>
                         </div>
                     </div>
+
+                    @if(auth()->user()->isAdmin())
+                        <div class="border-t border-zinc-200 pt-4 dark:border-zinc-700">
+                            <flux:button variant="ghost" size="sm" :href="route('reports.index')" wire:navigate icon="chart-bar" class="w-full">View Reports</flux:button>
+                        </div>
+                    @endif
                 </div>
             </div>
         </div>

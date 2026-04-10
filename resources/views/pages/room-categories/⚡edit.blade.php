@@ -1,10 +1,15 @@
 <?php
 
 use App\Models\RoomCategory;
+use Illuminate\Support\Facades\Storage;
 use Livewire\Attributes\Title;
+use Livewire\Attributes\Validate;
 use Livewire\Component;
+use Livewire\WithFileUploads;
 
 new #[Title('Edit Room Category')] class extends Component {
+    use WithFileUploads;
+
     public RoomCategory $roomCategory;
 
     public string $name = '';
@@ -14,6 +19,9 @@ new #[Title('Edit Room Category')] class extends Component {
     public array $amenities = [];
     public bool $is_active = true;
     public string $newAmenity = '';
+
+    #[Validate('nullable|image|max:2048')]
+    public $image = null;
 
     public function mount(RoomCategory $roomCategory): void
     {
@@ -53,6 +61,15 @@ new #[Title('Edit Room Category')] class extends Component {
             'amenities' => ['array'],
             'is_active' => ['boolean'],
         ]);
+
+        if ($this->image) {
+            // Delete old image if exists
+            if ($this->roomCategory->image_path && Storage::disk('public')->exists($this->roomCategory->image_path)) {
+                Storage::disk('public')->delete($this->roomCategory->image_path);
+            }
+
+            $validated['image_path'] = $this->image->store('room-categories', 'public');
+        }
 
         $this->roomCategory->update($validated);
 
@@ -97,6 +114,24 @@ new #[Title('Edit Room Category')] class extends Component {
             </div>
 
             <flux:switch wire:model="is_active" label="Active" description="Guests can see and book this category" />
+
+            {{-- Image Upload --}}
+            <flux:field>
+                <flux:label>Category Image</flux:label>
+                @if(!$image && $roomCategory->image_path)
+                    <div class="mb-2">
+                        <img src="{{ Storage::url($roomCategory->image_path) }}" alt="{{ $roomCategory->name }}" class="h-32 w-auto rounded-lg object-cover" />
+                        <p class="mt-1 text-xs text-zinc-500 dark:text-zinc-400">Current image</p>
+                    </div>
+                @endif
+                <input type="file" wire:model="image" accept="image/*" class="block w-full text-sm text-zinc-500 file:mr-4 file:rounded-lg file:border-0 file:bg-blue-50 file:px-4 file:py-2 file:text-sm file:font-medium file:text-blue-700 hover:file:bg-blue-100 dark:text-zinc-400 dark:file:bg-blue-900/20 dark:file:text-blue-400" />
+                <flux:error name="image" />
+                @if($image)
+                    <div class="mt-2">
+                        <img src="{{ $image->temporaryUrl() }}" alt="Preview" class="h-32 w-auto rounded-lg object-cover" />
+                    </div>
+                @endif
+            </flux:field>
 
             <div class="flex items-center gap-4">
                 <flux:button type="submit" variant="primary">Update Category</flux:button>

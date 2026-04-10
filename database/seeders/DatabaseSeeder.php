@@ -4,6 +4,7 @@ namespace Database\Seeders;
 
 use App\Models\User;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\Storage;
 
 class DatabaseSeeder extends Seeder
 {
@@ -12,6 +13,9 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
+        // Ensure room-categories storage directory exists
+        Storage::disk('public')->makeDirectory('room-categories');
+
         // Create admin user
         User::factory()->admin()->create([
             'name' => 'Admin User',

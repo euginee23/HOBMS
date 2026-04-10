@@ -27,10 +27,16 @@ new #[Title('Our Rooms')] #[Layout('layouts.public')] class extends Component {
             <div class="mt-12 grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
                 @forelse($categories as $category)
                     <div class="group overflow-hidden rounded-xl border border-zinc-200 bg-white shadow-sm transition hover:shadow-md dark:border-zinc-700 dark:bg-zinc-900">
-                        <div class="flex h-48 items-center justify-center bg-gradient-to-br from-blue-100 to-blue-50 dark:from-blue-900/20 dark:to-zinc-800">
-                            <svg class="size-16 text-blue-300 dark:text-blue-700" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 21h19.5m-18-18v18m10.5-18v18m6-13.5V21M6.75 6.75h.75m-.75 3h.75m-.75 3h.75m3-6h.75m-.75 3h.75m-.75 3h.75M6.75 21v-3.375c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21M3 3h12m-.75 4.5H21m-3.75 3H21m-3.75 3H21"/>
-                            </svg>
+                        <div class="relative h-48 overflow-hidden">
+                            @if($category->image_path)
+                                <img src="{{ Storage::url($category->image_path) }}" alt="{{ $category->name }}" class="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105" />
+                            @else
+                                <div class="flex h-full items-center justify-center bg-gradient-to-br from-blue-100 to-blue-50 dark:from-blue-900/20 dark:to-zinc-800">
+                                    <svg class="size-16 text-blue-300 dark:text-blue-700" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 21h19.5m-18-18v18m10.5-18v18m6-13.5V21M6.75 6.75h.75m-.75 3h.75m-.75 3h.75m3-6h.75m-.75 3h.75m-.75 3h.75M6.75 21v-3.375c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21M3 3h12m-.75 4.5H21m-3.75 3H21m-3.75 3H21"/>
+                                    </svg>
+                                </div>
+                            @endif
                         </div>
                         <div class="p-6">
                             <h3 class="text-lg font-semibold text-zinc-900 dark:text-white">{{ $category->name }}</h3>

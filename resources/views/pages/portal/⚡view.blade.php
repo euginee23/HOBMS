@@ -65,6 +65,50 @@ new #[Layout('layouts.public')] class extends Component {
                 <flux:badge :color="$booking->booking_status->color()" size="lg">{{ $booking->booking_status->label() }}</flux:badge>
             </div>
 
+            {{-- Booking Status Timeline --}}
+            @php
+                $statuses = [
+                    ['label' => 'Booked', 'icon' => 'calendar', 'reached' => true, 'date' => $booking->created_at],
+                    ['label' => 'Confirmed', 'icon' => 'check-circle', 'reached' => in_array($booking->booking_status, [\App\Enums\BookingStatus::Confirmed, \App\Enums\BookingStatus::CheckedIn, \App\Enums\BookingStatus::CheckedOut]), 'date' => $booking->confirmed_at],
+                    ['label' => 'Checked In', 'icon' => 'arrow-down-on-square', 'reached' => in_array($booking->booking_status, [\App\Enums\BookingStatus::CheckedIn, \App\Enums\BookingStatus::CheckedOut]), 'date' => $booking->checked_in_at],
+                    ['label' => 'Checked Out', 'icon' => 'arrow-up-on-square', 'reached' => $booking->booking_status === \App\Enums\BookingStatus::CheckedOut, 'date' => $booking->checked_out_at],
+                ];
+                $isCancelled = in_array($booking->booking_status, [\App\Enums\BookingStatus::Cancelled, \App\Enums\BookingStatus::NoShow]);
+            @endphp
+
+            @if($isCancelled)
+                <div class="mt-6 rounded-xl border border-red-200 bg-red-50 p-4 dark:border-red-800 dark:bg-red-900/20">
+                    <div class="flex items-center gap-2">
+                        <flux:icon.x-circle class="size-5 text-red-600 dark:text-red-400" />
+                        <span class="font-medium text-red-800 dark:text-red-400">
+                            {{ $booking->booking_status === \App\Enums\BookingStatus::Cancelled ? 'Booking Cancelled' : 'No Show' }}
+                        </span>
+                    </div>
+                    @if($booking->cancellation_reason)
+                        <p class="mt-2 text-sm text-red-700 dark:text-red-300">{{ $booking->cancellation_reason }}</p>
+                    @endif
+                </div>
+            @else
+                <div class="mt-6 rounded-xl border border-zinc-200 bg-white p-6 dark:border-zinc-700 dark:bg-zinc-900">
+                    <div class="flex items-center justify-between">
+                        @foreach($statuses as $index => $step)
+                            <div class="flex flex-col items-center text-center" style="flex: 1;">
+                                <div class="flex size-10 items-center justify-center rounded-full {{ $step['reached'] ? 'bg-blue-600 text-white dark:bg-blue-500' : 'bg-zinc-200 text-zinc-400 dark:bg-zinc-700 dark:text-zinc-500' }}">
+                                    <flux:icon :name="$step['icon']" class="size-5" />
+                                </div>
+                                <p class="mt-2 text-xs font-medium {{ $step['reached'] ? 'text-blue-600 dark:text-blue-400' : 'text-zinc-400 dark:text-zinc-500' }}">{{ $step['label'] }}</p>
+                                @if($step['date'])
+                                    <p class="mt-0.5 text-[10px] text-zinc-400 dark:text-zinc-500">{{ $step['date']->format('M d, g:ia') }}</p>
+                                @endif
+                            </div>
+                            @if($index < count($statuses) - 1)
+                                <div class="mx-1 h-0.5 flex-1 rounded {{ $statuses[$index + 1]['reached'] ? 'bg-blue-600 dark:bg-blue-500' : 'bg-zinc-200 dark:bg-zinc-700' }}" style="margin-top: -20px;"></div>
+                            @endif
+                        @endforeach
+                    </div>
+                </div>
+            @endif
+
             {{-- Booking Details --}}
             <div class="mt-8 rounded-xl border border-zinc-200 bg-white p-6 dark:border-zinc-700 dark:bg-zinc-900">
                 <h2 class="text-lg font-semibold text-zinc-900 dark:text-white">Booking Details</h2>
@@ -119,6 +163,23 @@ new #[Layout('layouts.public')] class extends Component {
                         </div>
                     @endif
                 </dl>
+
+                @if($booking->payments->count())
+                    <div class="mt-4 border-t border-zinc-200 pt-4 dark:border-zinc-700">
+                        <h3 class="text-sm font-medium text-zinc-700 dark:text-zinc-300">Payment History</h3>
+                        <div class="mt-2 space-y-2">
+                            @foreach($booking->payments->sortByDesc('paid_at') as $payment)
+                                <div class="flex items-center justify-between rounded-lg bg-zinc-50 px-3 py-2 text-sm dark:bg-zinc-800">
+                                    <div>
+                                        <span class="font-medium text-zinc-900 dark:text-white">₱{{ number_format($payment->amount, 2) }}</span>
+                                        <span class="ml-2 text-zinc-500 dark:text-zinc-400">via {{ $payment->payment_method->label() }}</span>
+                                    </div>
+                                    <span class="text-xs text-zinc-500 dark:text-zinc-400">{{ $payment->paid_at->format('M d, Y') }}</span>
+                                </div>
+                            @endforeach
+                        </div>
+                    </div>
+                @endif
             </div>
 
             {{-- Complaints Section --}}

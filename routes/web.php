@@ -37,6 +37,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::livewire('reports', 'pages::reports.index')->name('reports.index');
         Route::livewire('staff', 'pages::staff.index')->name('staff.index');
         Route::livewire('staff/create', 'pages::staff.create')->name('staff.create');
+        Route::livewire('staff/{user}/edit', 'pages::staff.edit')->name('staff.edit');
     });
 });
 

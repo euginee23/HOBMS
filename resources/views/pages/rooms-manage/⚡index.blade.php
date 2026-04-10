@@ -92,7 +92,7 @@ new #[Title('Rooms Management')] class extends Component {
                 </thead>
                 <tbody class="divide-y divide-zinc-200 dark:divide-zinc-700">
                     @forelse($this->rooms as $room)
-                        <tr class="hover:bg-zinc-50 dark:hover:bg-zinc-800/50">
+                        <tr wire:key="room-{{ $room->id }}" class="hover:bg-zinc-50 dark:hover:bg-zinc-800/50">
                             <td class="px-6 py-4 font-medium text-zinc-900 dark:text-white">{{ $room->room_number }}</td>
                             <td class="px-6 py-4 text-zinc-600 dark:text-zinc-400">{{ $room->roomCategory->name }}</td>
                             <td class="px-6 py-4 text-zinc-600 dark:text-zinc-400">{{ $room->floor }}</td>

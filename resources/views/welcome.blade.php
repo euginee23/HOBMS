@@ -179,15 +179,20 @@
                 <div class="mt-12 grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
                     @foreach(\App\Models\RoomCategory::active()->get() as $category)
                         <div class="group overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm transition hover:shadow-lg hover:-translate-y-0.5 dark:border-zinc-700 dark:bg-zinc-900">
-                            <div class="relative flex h-48 items-center justify-center overflow-hidden bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-blue-900/20 dark:to-zinc-800">
-                                {{-- Abstract room card pattern --}}
-                                <div class="absolute inset-0 opacity-30">
-                                    <div class="absolute -top-6 -right-6 size-32 rounded-full bg-blue-200/60 dark:bg-blue-800/30"></div>
-                                    <div class="absolute -bottom-4 -left-4 size-24 rounded-full bg-indigo-200/60 dark:bg-indigo-800/20"></div>
-                                </div>
-                                <svg class="relative size-16 text-blue-400 dark:text-blue-700" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 21h19.5m-18-18v18m10.5-18v18m6-13.5V21M6.75 6.75h.75m-.75 3h.75m-.75 3h.75m3-6h.75m-.75 3h.75m-.75 3h.75M6.75 21v-3.375c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21M3 3h12m-.75 4.5H21m-3.75 3H21m-3.75 3H21"/>
-                                </svg>
+                            <div class="relative h-48 overflow-hidden">
+                                @if($category->image_path)
+                                    <img src="{{ Storage::url($category->image_path) }}" alt="{{ $category->name }}" class="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105" />
+                                @else
+                                    <div class="flex h-full items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-blue-900/20 dark:to-zinc-800">
+                                        <div class="absolute inset-0 opacity-30">
+                                            <div class="absolute -top-6 -right-6 size-32 rounded-full bg-blue-200/60 dark:bg-blue-800/30"></div>
+                                            <div class="absolute -bottom-4 -left-4 size-24 rounded-full bg-indigo-200/60 dark:bg-indigo-800/20"></div>
+                                        </div>
+                                        <svg class="relative size-16 text-blue-400 dark:text-blue-700" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 21h19.5m-18-18v18m10.5-18v18m6-13.5V21M6.75 6.75h.75m-.75 3h.75m-.75 3h.75m3-6h.75m-.75 3h.75m-.75 3h.75M6.75 21v-3.375c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21M3 3h12m-.75 4.5H21m-3.75 3H21m-3.75 3H21"/>
+                                        </svg>
+                                    </div>
+                                @endif
                             </div>
                             <div class="p-6">
                                 <h3 class="text-lg font-semibold text-zinc-900 dark:text-white">{{ $category->name }}</h3>

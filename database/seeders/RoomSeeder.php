@@ -18,8 +18,8 @@ class RoomSeeder extends Seeder
 
         $roomMap = [
             'Standard' => ['101', '102', '103', '104', '105', '106', '107', '108'],
-            'Deluxe' => ['201', '202', '203', '204', '205'],
-            'Superior' => ['301', '302', '303', '304'],
+            'Deluxe' => ['201', '202', '203', '204', '205', '206'],
+            'Superior' => ['301', '302', '303', '304', '305'],
             'Suite' => ['401', '402', '403'],
             'Family' => ['501', '502', '503', '504'],
         ];
@@ -42,5 +42,6 @@ class RoomSeeder extends Seeder
         // Set a couple of rooms to maintenance for realism
         Room::where('room_number', '104')->update(['status' => RoomStatus::Maintenance, 'notes' => 'Plumbing repair in progress']);
         Room::where('room_number', '302')->update(['status' => RoomStatus::Maintenance, 'notes' => 'Scheduled deep cleaning']);
+        Room::where('room_number', '206')->update(['status' => RoomStatus::OutOfOrder, 'notes' => 'AC unit replacement']);
     }
 }
