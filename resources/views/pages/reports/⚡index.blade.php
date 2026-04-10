@@ -183,7 +183,7 @@ new #[Title('Reports')] class extends Component {
                     @forelse($revenueByMethod as $method)
                         <div class="flex items-center justify-between">
                             <div>
-                                <p class="text-sm font-medium text-zinc-900 dark:text-white">{{ \App\Enums\PaymentMethod::from($method->payment_method)->label() }}</p>
+                                <p class="text-sm font-medium text-zinc-900 dark:text-white">{{ $method->payment_method->label() }}</p>
                                 <p class="text-xs text-zinc-500 dark:text-zinc-400">{{ $method->count }} {{ Str::plural('payment', $method->count) }}</p>
                             </div>
                             <span class="text-sm font-bold text-zinc-900 dark:text-white">₱{{ number_format($method->total, 2) }}</span>
