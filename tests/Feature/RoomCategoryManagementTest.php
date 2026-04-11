@@ -86,7 +86,19 @@ test('cover_image_url accessor returns url when image exists', function () {
     Storage::fake('public');
     $category = RoomCategory::factory()->create(['image_path' => 'room-categories/test.jpg']);
 
-    expect($category->cover_image_url)->toContain('/media/room-categories/test.jpg');
+    expect($category->cover_image_url)->toBe('/media/room-categories/test.jpg');
+});
+
+test('cover_image_url accessor normalizes storage prefixed paths', function () {
+    $category = RoomCategory::factory()->create(['image_path' => '/storage/room-categories/test.jpg']);
+
+    expect($category->cover_image_url)->toBe('/media/room-categories/test.jpg');
+});
+
+test('cover_image_url accessor normalizes absolute media urls', function () {
+    $category = RoomCategory::factory()->create(['image_path' => 'https://example.com/media/room-categories/test.jpg']);
+
+    expect($category->cover_image_url)->toBe('/media/room-categories/test.jpg');
 });
 
 test('cover_image_url accessor returns null when no image', function () {
