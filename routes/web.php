@@ -1,9 +1,21 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Storage;
 
 // Public pages
 Route::view('/', 'welcome')->name('home');
+Route::get('media/{path}', function (string $path) {
+    if (str_contains($path, '..')) {
+        abort(404);
+    }
+
+    if (! Storage::disk('public')->exists($path)) {
+        abort(404);
+    }
+
+    return Storage::disk('public')->response($path);
+})->where('path', '.*')->name('media.public');
 Route::livewire('forgot-password', 'pages::auth.forgot-password')->name('password.request')->middleware('guest');
 Route::livewire('rooms', 'pages::rooms.index')->name('rooms.index');
 Route::livewire('rooms/{slug}', 'pages::rooms.show')->name('rooms.show');

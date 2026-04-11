@@ -8,7 +8,6 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasManyThrough;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
 class RoomCategory extends Model
@@ -62,7 +61,7 @@ class RoomCategory extends Model
     protected function coverImageUrl(): Attribute
     {
         return Attribute::get(fn (): ?string => $this->image_path
-            ? Storage::disk('public')->url($this->image_path)
+            ? route('media.public', ['path' => ltrim($this->image_path, '/')])
             : null
         );
     }
