@@ -2,6 +2,7 @@
 
 use App\Models\RoomCategory;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Validation\ValidationException;
 use Livewire\Attributes\Title;
 use Livewire\Attributes\Validate;
 use Livewire\Component;
@@ -71,15 +72,28 @@ new #[Title('Edit Room Category')] class extends Component {
             'is_active' => ['boolean'],
         ]);
 
+        $oldImagePath = $this->roomCategory->image_path;
+
         if ($this->image) {
-            if ($this->roomCategory->image_path && Storage::disk('public')->exists($this->roomCategory->image_path)) {
-                Storage::disk('public')->delete($this->roomCategory->image_path);
+            $storedPath = $this->image->storePublicly(
+                path: 'room-categories',
+                options: ['disk' => 'public']
+            );
+
+            if (! is_string($storedPath) || $storedPath === '' || ! Storage::disk('public')->exists($storedPath)) {
+                throw ValidationException::withMessages([
+                    'image' => 'Image upload failed on server. Please try again.',
+                ]);
             }
 
-            $validated['image_path'] = $this->image->store('room-categories', 'public');
+            $validated['image_path'] = $storedPath;
         }
 
         $this->roomCategory->update($validated);
+
+        if (isset($validated['image_path']) && $oldImagePath && $oldImagePath !== $validated['image_path'] && Storage::disk('public')->exists($oldImagePath)) {
+            Storage::disk('public')->delete($oldImagePath);
+        }
 
         session()->flash('success', 'Room category updated successfully.');
         $this->redirect(route('room-categories.index'), navigate: true);

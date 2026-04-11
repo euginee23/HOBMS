@@ -34,6 +34,10 @@ test('admin can create a room category with new fields', function () {
         ->call('save')
         ->assertRedirect(route('room-categories.index'));
 
+    $createdCategory = RoomCategory::query()->where('name', 'Premium')->firstOrFail();
+    expect($createdCategory->image_path)->not->toBeNull();
+    Storage::disk('public')->assertExists($createdCategory->image_path);
+
     $this->assertDatabaseHas('room_categories', [
         'name' => 'Premium',
         'room_size_sqm' => 35,
@@ -60,8 +64,11 @@ test('base occupancy cannot exceed max capacity', function () {
 test('admin can edit room category with new fields', function () {
     Storage::fake('public');
     $admin = User::factory()->admin()->create();
+    Storage::disk('public')->put('room-categories/old-image.jpg', 'old-image-content');
+
     $category = RoomCategory::factory()->create([
         'name' => 'Standard',
+        'image_path' => 'room-categories/old-image.jpg',
         'max_capacity' => 4,
         'room_size_sqm' => 22,
         'base_occupancy' => 2,
@@ -73,13 +80,18 @@ test('admin can edit room category with new fields', function () {
         ->set('room_size_sqm', '30')
         ->set('base_occupancy', 3)
         ->set('extra_person_charge', '700')
+        ->set('image', UploadedFile::fake()->image('replacement.jpg'))
         ->call('save')
         ->assertRedirect(route('room-categories.index'));
 
     $category->refresh();
     expect($category->room_size_sqm)->toBe(30)
         ->and($category->base_occupancy)->toBe(3)
-        ->and((float) $category->extra_person_charge)->toBe(700.0);
+        ->and((float) $category->extra_person_charge)->toBe(700.0)
+        ->and($category->image_path)->not->toBe('room-categories/old-image.jpg');
+
+    Storage::disk('public')->assertExists($category->image_path);
+    Storage::disk('public')->assertMissing('room-categories/old-image.jpg');
 });
 
 test('cover_image_url accessor returns url when image exists', function () {
