@@ -23,10 +23,6 @@ new #[Title('Add Room Category')] class extends Component {
     #[Validate('nullable|image|max:2048')]
     public $image = null;
 
-    /** @var array<int, \Livewire\Features\SupportFileUploads\TemporaryUploadedFile> */
-    #[Validate(['gallery.*' => 'image|max:2048'])]
-    public array $gallery = [];
-
     public function addAmenity(): void
     {
         $amenity = trim($this->newAmenity);
@@ -44,12 +40,6 @@ new #[Title('Add Room Category')] class extends Component {
         $this->amenities = array_values($this->amenities);
     }
 
-    public function removeGalleryImage(int $index): void
-    {
-        unset($this->gallery[$index]);
-        $this->gallery = array_values($this->gallery);
-    }
-
     public function save(): void
     {
         $validated = $this->validate([
@@ -62,19 +52,13 @@ new #[Title('Add Room Category')] class extends Component {
             'extra_person_charge' => ['required', 'numeric', 'min:0'],
             'amenities' => ['array'],
             'is_active' => ['boolean'],
-            'gallery' => ['array', 'max:5'],
         ]);
 
         if ($this->image) {
             $validated['image_path'] = $this->image->store('room-categories', 'public');
         }
 
-        $category = RoomCategory::create($validated);
-
-        foreach ($this->gallery as $index => $galleryImage) {
-            $path = $galleryImage->store('room-categories/gallery', 'public');
-            $category->images()->create(['image_path' => $path, 'sort_order' => $index]);
-        }
+        RoomCategory::create($validated);
 
         session()->flash('success', 'Room category created successfully.');
         $this->redirect(route('room-categories.index'), navigate: true);
@@ -132,25 +116,6 @@ new #[Title('Add Room Category')] class extends Component {
                 @if($image)
                     <div class="mt-2">
                         <img src="{{ $image->temporaryUrl() }}" alt="Preview" class="h-32 w-auto rounded-lg object-cover" />
-                    </div>
-                @endif
-            </flux:field>
-
-            {{-- Gallery Images --}}
-            <flux:field>
-                <flux:label>Gallery Images <span class="text-xs font-normal text-zinc-400">(up to 5)</span></flux:label>
-                @if(count($gallery) < 5)
-                    <input type="file" wire:model="gallery" accept="image/*" multiple class="block w-full text-sm text-zinc-500 file:mr-4 file:rounded-lg file:border-0 file:bg-blue-50 file:px-4 file:py-2 file:text-sm file:font-medium file:text-blue-700 hover:file:bg-blue-100 dark:text-zinc-400 dark:file:bg-blue-900/20 dark:file:text-blue-400" />
-                @endif
-                <flux:error name="gallery.*" />
-                @if(count($gallery))
-                    <div class="mt-2 flex flex-wrap gap-3">
-                        @foreach($gallery as $index => $img)
-                            <div class="group relative">
-                                <img src="{{ $img->temporaryUrl() }}" alt="Gallery preview" class="h-24 w-24 rounded-lg object-cover" />
-                                <button type="button" wire:click="removeGalleryImage({{ $index }})" class="absolute -right-2 -top-2 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-xs text-white opacity-0 transition group-hover:opacity-100">&times;</button>
-                            </div>
-                        @endforeach
                     </div>
                 @endif
             </flux:field>

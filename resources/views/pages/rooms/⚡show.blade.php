@@ -12,7 +12,6 @@ new #[Layout('layouts.public')] #[Title('Room Details')] class extends Component
     {
         $this->category = RoomCategory::where('slug', $slug)
             ->where('is_active', true)
-            ->with('images')
             ->firstOrFail();
     }
 
@@ -47,17 +46,6 @@ new #[Layout('layouts.public')] #[Title('Room Details')] class extends Component
                     </div>
                 @endif
             </div>
-
-            {{-- Gallery Images --}}
-            @if($category->images->isNotEmpty())
-                <div class="mt-4 grid grid-cols-3 gap-3 sm:grid-cols-5">
-                    @foreach($category->images as $image)
-                        <div class="h-20 overflow-hidden rounded-lg">
-                            <img src="{{ Storage::url($image->image_path) }}" alt="{{ $category->name }} gallery" class="h-full w-full object-cover" />
-                        </div>
-                    @endforeach
-                </div>
-            @endif
 
             {{-- Details --}}
             <div class="mt-8">

@@ -82,23 +82,15 @@ test('admin can edit room category with new fields', function () {
         ->and((float) $category->extra_person_charge)->toBe(700.0);
 });
 
-test('gallery images limited to 5', function () {
-    $admin = User::factory()->admin()->create();
+test('cover_image_url accessor returns url when image exists', function () {
+    Storage::fake('public');
+    $category = RoomCategory::factory()->create(['image_path' => 'room-categories/test.jpg']);
 
-    $files = [];
-    for ($i = 0; $i < 6; $i++) {
-        $files[] = UploadedFile::fake()->image("gallery{$i}.jpg");
-    }
+    expect($category->cover_image_url)->toContain('/storage/room-categories/test.jpg');
+});
 
-    Livewire::actingAs($admin)
-        ->test('pages::room-categories.create')
-        ->set('name', 'Test Gallery')
-        ->set('description', 'Test desc')
-        ->set('price_per_night', '3000')
-        ->set('max_capacity', 2)
-        ->set('base_occupancy', 2)
-        ->set('extra_person_charge', '0')
-        ->set('gallery', $files)
-        ->call('save')
-        ->assertHasErrors(['gallery']);
+test('cover_image_url accessor returns null when no image', function () {
+    $category = RoomCategory::factory()->create(['image_path' => null]);
+
+    expect($category->cover_image_url)->toBeNull();
 });

@@ -28,8 +28,8 @@ new #[Title('Our Rooms')] #[Layout('layouts.public')] class extends Component {
                 @forelse($categories as $category)
                     <div class="group overflow-hidden rounded-xl border border-zinc-200 bg-white shadow-sm transition hover:shadow-md dark:border-zinc-700 dark:bg-zinc-900">
                         <div class="relative h-48 overflow-hidden">
-                            @if($category->image_path)
-                                <img src="{{ Storage::url($category->image_path) }}" alt="{{ $category->name }}" class="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105" />
+                            @if($category->cover_image_url)
+                                <img src="{{ $category->cover_image_url }}" alt="{{ $category->name }}" class="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105" />
                             @else
                                 <div class="flex h-full items-center justify-center bg-gradient-to-br from-blue-100 to-blue-50 dark:from-blue-900/20 dark:to-zinc-800">
                                     <svg class="size-16 text-blue-300 dark:text-blue-700" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1" stroke="currentColor">

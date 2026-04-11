@@ -7,8 +7,11 @@ use App\Models\Complaint;
 use App\Models\Payment;
 use App\Models\Room;
 use Illuminate\Support\Carbon;
+use App\Exports\ReportExport;
 use Livewire\Attributes\Title;
 use Livewire\Component;
+use Maatwebsite\Excel\Facades\Excel;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 new #[Title('Reports')] class extends Component {
     public string $period = 'this_month';
@@ -36,6 +39,15 @@ new #[Title('Reports')] class extends Component {
             'custom' => null,
             default => null,
         };
+    }
+
+    public function downloadReport(): BinaryFileResponse
+    {
+        $from = Carbon::parse($this->from);
+        $to = Carbon::parse($this->to);
+        $filename = 'report-' . $from->format('Y-m-d') . '-to-' . $to->format('Y-m-d') . '.xlsx';
+
+        return Excel::download(new ReportExport($from, $to), $filename);
     }
 
     public function with(): array
@@ -101,6 +113,9 @@ new #[Title('Reports')] class extends Component {
         <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <flux:heading size="xl">Reports</flux:heading>
             <div class="flex items-center gap-3">
+                <flux:button wire:click="downloadReport" variant="primary" size="sm" icon="arrow-down-tray">
+                    Export XLSX
+                </flux:button>
                 <flux:select wire:model.live="period" class="w-40">
                     <flux:select.option value="today">Today</flux:select.option>
                     <flux:select.option value="this_week">This Week</flux:select.option>

@@ -69,8 +69,8 @@ new #[Title('Room Categories')] class extends Component {
                         <tr wire:key="cat-{{ $category->id }}" class="hover:bg-zinc-50 dark:hover:bg-zinc-800/50">
                             <td class="px-6 py-4">
                                 <div class="flex items-center gap-3">
-                                    @if($category->image_path)
-                                        <img src="{{ Storage::url($category->image_path) }}" alt="{{ $category->name }}" class="size-10 rounded-lg object-cover" />
+                                    @if($category->cover_image_url)
+                                        <img src="{{ $category->cover_image_url }}" alt="{{ $category->name }}" class="size-10 rounded-lg object-cover" />
                                     @else
                                         <div class="flex size-10 items-center justify-center rounded-lg bg-blue-50 dark:bg-blue-900/20">
                                             <flux:icon.building-office class="size-5 text-blue-400" />

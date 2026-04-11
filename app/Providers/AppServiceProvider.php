@@ -5,6 +5,7 @@ namespace App\Providers;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Validation\Rules\Password;
 
@@ -24,6 +25,7 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         $this->configureDefaults();
+        $this->ensureStorageLink();
     }
 
     /**
@@ -46,5 +48,15 @@ class AppServiceProvider extends ServiceProvider
                 ->uncompromised()
             : null,
         );
+    }
+
+    /**
+     * Log a warning if the public storage symlink is missing.
+     */
+    protected function ensureStorageLink(): void
+    {
+        if (app()->isProduction() && ! file_exists(public_path('storage'))) {
+            Log::warning('The public storage symlink is missing. Run "php artisan storage:link" to create it. Uploaded images will not display.');
+        }
     }
 }

@@ -16,6 +16,7 @@
                 <nav class="hidden items-center gap-4 text-sm sm:flex">
                     <a href="#rooms" class="text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white">Rooms</a>
                     <a href="#track-booking" class="text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white">Track Booking</a>
+                    <a href="#complaints" class="text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white">Complaints</a>
                     @auth
                         <a href="{{ route('dashboard') }}" class="rounded-md bg-zinc-900 px-4 py-2 text-white hover:bg-zinc-700 dark:bg-white dark:text-zinc-900 dark:hover:bg-zinc-200" wire:navigate>Dashboard</a>
                     @else
@@ -85,6 +86,7 @@
                 <nav class="flex flex-col gap-1 px-4 py-3">
                     <a href="#rooms" @click="mobileOpen = false" class="rounded-lg px-3 py-2.5 text-sm font-medium text-zinc-700 hover:bg-slate-100 dark:text-zinc-300 dark:hover:bg-zinc-800">Rooms</a>
                     <a href="#track-booking" @click="mobileOpen = false" class="rounded-lg px-3 py-2.5 text-sm font-medium text-zinc-700 hover:bg-slate-100 dark:text-zinc-300 dark:hover:bg-zinc-800">Track Booking</a>
+                    <a href="#complaints" @click="mobileOpen = false" class="rounded-lg px-3 py-2.5 text-sm font-medium text-zinc-700 hover:bg-slate-100 dark:text-zinc-300 dark:hover:bg-zinc-800">Complaints</a>
                     <div class="my-1 border-t border-slate-100 dark:border-zinc-800"></div>
                     @auth
                         <a href="{{ route('dashboard') }}" @click="mobileOpen = false" class="rounded-lg px-3 py-2.5 text-sm font-medium text-zinc-700 hover:bg-slate-100 dark:text-zinc-300 dark:hover:bg-zinc-800" wire:navigate>Dashboard</a>
@@ -180,8 +182,8 @@
                     @foreach(\App\Models\RoomCategory::active()->get() as $category)
                         <div class="group overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm transition hover:shadow-lg hover:-translate-y-0.5 dark:border-zinc-700 dark:bg-zinc-900">
                             <div class="relative h-48 overflow-hidden">
-                                @if($category->image_path)
-                                    <img src="{{ Storage::url($category->image_path) }}" alt="{{ $category->name }}" class="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105" />
+                                @if($category->cover_image_url)
+                                    <img src="{{ $category->cover_image_url }}" alt="{{ $category->name }}" class="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105" />
                                 @else
                                     <div class="flex h-full items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-blue-900/20 dark:to-zinc-800">
                                         <div class="absolute inset-0 opacity-30">
@@ -231,6 +233,19 @@
                     <p class="mt-3 text-zinc-500 dark:text-zinc-400">Enter your booking reference number to view your booking details</p>
                 </div>
                 @livewire('pages::portal.lookup')
+            </div>
+        </section>
+
+        {{-- Guest Complaints Section --}}
+        <section id="complaints" class="border-t border-slate-200 bg-white py-16 sm:py-24 dark:border-zinc-700 dark:bg-zinc-800">
+            <div class="mx-auto max-w-3xl px-4 sm:px-6">
+                <div class="mb-8 text-center">
+                    <div class="mb-3 inline-block rounded-full bg-blue-50 px-3 py-1 text-xs font-semibold uppercase tracking-widest text-blue-600 dark:bg-blue-900/30 dark:text-blue-400">Guest Support</div>
+                    <h2 class="text-3xl font-bold tracking-tight text-zinc-900 dark:text-white">Submit a Complaint</h2>
+                    <p class="mt-3 text-zinc-500 dark:text-zinc-400">Have an issue during your stay? Send it directly to our team using your booking reference.</p>
+                </div>
+
+                @livewire('pages::portal.complaint')
             </div>
         </section>
 

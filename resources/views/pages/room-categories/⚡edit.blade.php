@@ -1,7 +1,6 @@
 <?php
 
 use App\Models\RoomCategory;
-use App\Models\RoomCategoryImage;
 use Illuminate\Support\Facades\Storage;
 use Livewire\Attributes\Title;
 use Livewire\Attributes\Validate;
@@ -27,13 +26,9 @@ new #[Title('Edit Room Category')] class extends Component {
     #[Validate('nullable|image|max:2048')]
     public $image = null;
 
-    /** @var array<int, \Livewire\Features\SupportFileUploads\TemporaryUploadedFile> */
-    #[Validate(['newGallery.*' => 'image|max:2048'])]
-    public array $newGallery = [];
-
     public function mount(RoomCategory $roomCategory): void
     {
-        $this->roomCategory = $roomCategory->load('images');
+        $this->roomCategory = $roomCategory;
         $this->name = $roomCategory->name;
         $this->description = $roomCategory->description ?? '';
         $this->price_per_night = $roomCategory->price_per_night;
@@ -62,25 +57,8 @@ new #[Title('Edit Room Category')] class extends Component {
         $this->amenities = array_values($this->amenities);
     }
 
-    public function removeExistingGalleryImage(int $imageId): void
-    {
-        $image = RoomCategoryImage::findOrFail($imageId);
-        Storage::disk('public')->delete($image->image_path);
-        $image->delete();
-        $this->roomCategory->load('images');
-    }
-
-    public function removeNewGalleryImage(int $index): void
-    {
-        unset($this->newGallery[$index]);
-        $this->newGallery = array_values($this->newGallery);
-    }
-
     public function save(): void
     {
-        $existingCount = $this->roomCategory->images()->count();
-        $newCount = count($this->newGallery);
-
         $validated = $this->validate([
             'name' => ['required', 'string', 'max:255', 'unique:room_categories,name,' . $this->roomCategory->id],
             'description' => ['nullable', 'string', 'max:1000'],
@@ -93,12 +71,6 @@ new #[Title('Edit Room Category')] class extends Component {
             'is_active' => ['boolean'],
         ]);
 
-        if (($existingCount + $newCount) > 5) {
-            $this->addError('newGallery', 'Maximum 5 gallery images allowed. You have ' . $existingCount . ' existing.');
-
-            return;
-        }
-
         if ($this->image) {
             if ($this->roomCategory->image_path && Storage::disk('public')->exists($this->roomCategory->image_path)) {
                 Storage::disk('public')->delete($this->roomCategory->image_path);
@@ -108,14 +80,6 @@ new #[Title('Edit Room Category')] class extends Component {
         }
 
         $this->roomCategory->update($validated);
-
-        foreach ($this->newGallery as $index => $galleryImage) {
-            $path = $galleryImage->store('room-categories/gallery', 'public');
-            $this->roomCategory->images()->create([
-                'image_path' => $path,
-                'sort_order' => $existingCount + $index,
-            ]);
-        }
 
         session()->flash('success', 'Room category updated successfully.');
         $this->redirect(route('room-categories.index'), navigate: true);
@@ -168,9 +132,9 @@ new #[Title('Edit Room Category')] class extends Component {
             {{-- Cover Image --}}
             <flux:field>
                 <flux:label>Cover Image</flux:label>
-                @if(!$image && $roomCategory->image_path)
+                @if(!$image && $roomCategory->cover_image_url)
                     <div class="mb-2">
-                        <img src="{{ Storage::url($roomCategory->image_path) }}" alt="{{ $roomCategory->name }}" class="h-32 w-auto rounded-lg object-cover" />
+                        <img src="{{ $roomCategory->cover_image_url }}" alt="{{ $roomCategory->name }}" class="h-32 w-auto rounded-lg object-cover" />
                         <p class="mt-1 text-xs text-zinc-500 dark:text-zinc-400">Current cover image</p>
                     </div>
                 @endif
@@ -179,35 +143,6 @@ new #[Title('Edit Room Category')] class extends Component {
                 @if($image)
                     <div class="mt-2">
                         <img src="{{ $image->temporaryUrl() }}" alt="Preview" class="h-32 w-auto rounded-lg object-cover" />
-                    </div>
-                @endif
-            </flux:field>
-
-            {{-- Gallery Images --}}
-            <flux:field>
-                <flux:label>Gallery Images <span class="text-xs font-normal text-zinc-400">(up to 5)</span></flux:label>
-                @if($roomCategory->images->count())
-                    <div class="mb-2 flex flex-wrap gap-3">
-                        @foreach($roomCategory->images as $galleryImg)
-                            <div class="group relative">
-                                <img src="{{ Storage::url($galleryImg->image_path) }}" alt="Gallery" class="h-24 w-24 rounded-lg object-cover" />
-                                <button type="button" wire:click="removeExistingGalleryImage({{ $galleryImg->id }})" wire:confirm="Remove this gallery image?" class="absolute -right-2 -top-2 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-xs text-white opacity-0 transition group-hover:opacity-100">&times;</button>
-                            </div>
-                        @endforeach
-                    </div>
-                @endif
-                @if(($roomCategory->images->count() + count($newGallery)) < 5)
-                    <input type="file" wire:model="newGallery" accept="image/*" multiple class="block w-full text-sm text-zinc-500 file:mr-4 file:rounded-lg file:border-0 file:bg-blue-50 file:px-4 file:py-2 file:text-sm file:font-medium file:text-blue-700 hover:file:bg-blue-100 dark:text-zinc-400 dark:file:bg-blue-900/20 dark:file:text-blue-400" />
-                @endif
-                <flux:error name="newGallery" />
-                @if(count($newGallery))
-                    <div class="mt-2 flex flex-wrap gap-3">
-                        @foreach($newGallery as $index => $img)
-                            <div class="group relative">
-                                <img src="{{ $img->temporaryUrl() }}" alt="New gallery" class="h-24 w-24 rounded-lg object-cover" />
-                                <button type="button" wire:click="removeNewGalleryImage({{ $index }})" class="absolute -right-2 -top-2 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-xs text-white opacity-0 transition group-hover:opacity-100">&times;</button>
-                            </div>
-                        @endforeach
                     </div>
                 @endif
             </flux:field>

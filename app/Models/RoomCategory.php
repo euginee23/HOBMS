@@ -3,10 +3,12 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasManyThrough;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
 class RoomCategory extends Model
@@ -52,6 +54,17 @@ class RoomCategory extends Model
                 $category->slug = Str::slug($category->name);
             }
         });
+    }
+
+    /**
+     * Get the cover image URL.
+     */
+    protected function coverImageUrl(): Attribute
+    {
+        return Attribute::get(fn (): ?string => $this->image_path
+            ? Storage::disk('public')->url($this->image_path)
+            : null
+        );
     }
 
     /**
