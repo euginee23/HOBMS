@@ -2,6 +2,7 @@
 
 use App\Models\RoomCategory;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 use Livewire\Attributes\Title;
 use Livewire\Attributes\Validate;
@@ -75,10 +76,9 @@ new #[Title('Edit Room Category')] class extends Component {
         $oldImagePath = $this->roomCategory->image_path;
 
         if ($this->image) {
-            $storedPath = $this->image->storePublicly(
-                path: 'room-categories',
-                options: ['disk' => 'public']
-            );
+            $extension = $this->image->getClientOriginalExtension();
+            $filename = Str::random(40).($extension ? '.'.$extension : '');
+            $storedPath = Storage::disk('public')->putFileAs('room-categories', $this->image, $filename);
 
             if (! is_string($storedPath) || $storedPath === '' || ! Storage::disk('public')->exists($storedPath)) {
                 throw ValidationException::withMessages([
